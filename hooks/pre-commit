@@ -1,0 +1,22 @@
+#!/bin/bash
+
+black -l 80 -t py38 --exclude venv/ .
+DELETED_FILES=""
+while read FLAG FILENAME
+do
+	if [[ "${FLAG}" == "D" ]]
+	then
+		DELETED_FILES="${DELETED_FILES}"$'\n'"${FILENAME}"
+	fi
+done <<< "$(git status -s | awk -F " " '{print $1 " " $2}')"
+DELETED_FILES=$(echo "${DELETED_FILES}" | tail -n+2)
+git diff --name-only --cached | while read LINE;
+do
+	IS_DELETED=$(echo "${DELETED_FILES}" | grep "${LINE}")
+	if [ -z "${IS_DELETED}" ]
+	then
+		git add "${LINE}"
+	fi
+done
+exit 0
+
