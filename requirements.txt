@@ -1,6 +1,7 @@
 asgiref==3.4.1
 astroid==2.8.2
 Django==3.2.8
+drf-yasg==1.20.0
 isort==5.9.3
 lazy-object-proxy==1.6.0
 mccabe==0.6.1
@@ -12,3 +13,4 @@ toml==0.10.2
 typing-extensions==3.10.0.2
 wrapt==1.12.1
 djangorestframework==3.12.4
+drf-yasg==1.20.0
