@@ -7,4 +7,5 @@ urlpatterns = [
     path('register/', RegisterUser.as_view(), name='register'),
     path('login/', jwt_views.TokenObtainPairView.as_view(), name='login'),
     path('logout/', jwt_views.TokenRefreshView.as_view(), name='logout'),
+    path('verify/', jwt_views.TokenVerifyView.as_view(), name='verify'),
 ]
