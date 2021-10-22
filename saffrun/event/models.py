@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
-from saffrun.comment.models import Comment
+from comment.models import Comment
 
 
 class BaseModel(models.Model):
@@ -18,11 +18,14 @@ class Event(BaseModel):
         return "events-picture/" + self.id + "/" + filename
 
     title = models.CharField(max_length=200)
-    participants = models.ManyToManyField(User, on_delete=models.DO_NOTHING)
+    participants = models.ManyToManyField(
+        User, related_name="participated_events"
+    )
     description = models.TextField()
     image = models.ImageField(upload_to=get_file_path, blank=True, null=True)
     discount = models.PositiveIntegerField()
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="owned_event"
+    )
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
-    comments = models.ManyToManyField(Comment, on_delete=models.CASCADE)
