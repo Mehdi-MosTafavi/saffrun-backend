@@ -1,4 +1,3 @@
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import api_view
@@ -30,3 +29,21 @@ def get_event(request):
         return Response({"error": NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
     serializer = EventSerializer(event)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method="post",
+    request_body=EventSerializer,
+    responses={200: event_response, 406: INVALID_DATA},
+)
+@api_view(["POST"])
+def add_event(request):
+    event_serializer = EventSerializer(data=request.data)
+    if "image" in request.FILES.keys():
+        event_serializer.initial_data["image"] = request.FILES.get("image")
+    if not event_serializer.is_valid():
+        return Response(
+            {"error": INVALID_DATA}, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+    event_serializer.save()
+    return Response(data=event_serializer.data, status=status.HTTP_200_OK)

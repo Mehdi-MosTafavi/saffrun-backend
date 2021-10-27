@@ -21,7 +21,7 @@ class Event(BaseModel):
     participants = models.ManyToManyField(
         User, related_name="participated_events"
     )
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to=get_file_path, blank=True, null=True)
     discount = models.PositiveIntegerField()
     owner = models.ForeignKey(
