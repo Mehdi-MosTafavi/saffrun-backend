@@ -2,6 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("get/", views.get_event, name="get-event"),
-    path("add/", views.add_event, name="add-event"),
+    path(
+        "<int:pk>",
+        views.EventRetrieveUpdateDestroyAPIView.as_view(),
+        name="event",
+    ),
+    path("add/", views.CreateEvent.as_view(), name="add-event"),
 ]
