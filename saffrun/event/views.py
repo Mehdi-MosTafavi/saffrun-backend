@@ -17,7 +17,6 @@ from .serializers import EventSerializer, GetEventSerializer
     manual_parameters=[event_id_param],
     responses={200: event_response, 406: INVALID_DATA, 404: NOT_FOUND},
 )
-@login_required
 @api_view(["GET"])
 def get_event(request):
     request_serializer = GetEventSerializer(data=request.GET)

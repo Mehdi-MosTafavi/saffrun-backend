@@ -15,7 +15,7 @@ class BaseModel(models.Model):
 
 class Event(BaseModel):
     def get_file_path(self, filename):
-        return "events-picture/" + self.id + "/" + filename
+        return "events-picture/" + str(self.id) + "/" + filename
 
     title = models.CharField(max_length=200)
     participants = models.ManyToManyField(
