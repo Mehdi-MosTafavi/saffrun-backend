@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
 from rest_framework import serializers, status
 from rest_framework.response import Response
 
@@ -18,14 +19,19 @@ class ManyEventSerializer(serializers.Serializer):
 
 
 class AllEventSerializer(serializers.Serializer):
+    class SortChoices(models.TextChoices):
+        TTL = "title"
+        SDT = "start_datetime"
+
     search_query = serializers.CharField(
         max_length=200, allow_null=False, allow_blank=True
     )
+    SortChoices.values
     owner_id = serializers.IntegerField(required=False)
     participant_id = serializers.IntegerField(required=False)
     from_datetime = serializers.DateTimeField(required=False)
     until_datetime = serializers.DateTimeField(required=False)
-    sort = serializers.ChoiceField([(1, "title"), (2, "start_date")], default=1)
+    sort = serializers.ChoiceField(SortChoices, default=SortChoices.TTL)
 
 
 class AddParticipantSerializer(serializers.Serializer):

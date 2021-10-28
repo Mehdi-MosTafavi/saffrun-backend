@@ -13,6 +13,7 @@ from .serializers import (
     ManyEventSerializer,
     AddParticipantSerializer,
 )
+from .utils import get_sorted_events
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -45,37 +46,9 @@ def get_all_events(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    from_datetime_query = (
-        Q(start_datetime__gte=events_serializer.data.get("from_datetime"))
-        if events_serializer.data.get("from_datetime")
-        else Q()
-    )
-    until_datetime_query = (
-        Q(end_datetime__lte=events_serializer.data.get("until_datetime"))
-        if events_serializer.data.get("until_datetime")
-        else Q()
-    )
-    owner_query = (
-        Q(owner=events_serializer.data.get("owner_id"))
-        if events_serializer.data.get("owner_id")
-        else Q()
-    )
-    participant_query = (
-        Q(participants__in=[events_serializer.data.get("participant_id")])
-        if events_serializer.data.get("participant_id")
-        else Q()
-    )
-    final_query = (
-        Q(title__icontains=events_serializer.data.get("search_query"))
-        & from_datetime_query
-        & until_datetime_query
-        & owner_query
-        & participant_query
-    )
-    if events_serializer.data.get("sort") == 1:
-        events = Event.objects.filter(final_query).order_by("title")
-    else:
-        events = Event.objects.filter(final_query).order_by("start_datetime")
+
+    events = get_sorted_events(events_serializer)
+
     return Response(
         {"events": EventSerializer(instance=events, many=True).data},
         status=status.HTTP_200_OK,
