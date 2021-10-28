@@ -18,3 +18,4 @@ psycopg2==2.9.1
 black==21.9b0
 Pillow==8.4.0
 djangorestframework-simplejwt==5.0.0
+factory_boy==3.2.0
