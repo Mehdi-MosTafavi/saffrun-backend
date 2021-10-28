@@ -20,3 +20,4 @@ class EventFactory(DjangoModelFactory):
     end_datetime = timezone.now().astimezone(
         timezone.get_current_timezone()
     ) + timedelta(days=1, hours=2)
+    discount = factory.Faker("pyint", min_value=0, max_value=80)
