@@ -5,12 +5,13 @@ from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
 
-from .const import INVALID_DATA
+from .const import INVALID_DATA, NOT_FOUND
 from .models import Event
 from .serializers import (
     EventSerializer,
     AllEventSerializer,
     ManyEventSerializer,
+    AddParticipantSerializer,
 )
 
 
@@ -78,3 +79,19 @@ def get_all_events(request):
         {"events": EventSerializer(instance=events, many=True).data},
         status=status.HTTP_200_OK,
     )
+
+
+@swagger_auto_schema(
+    method="post",
+    request_body=AddParticipantSerializer,
+    responses={200: EventSerializer, 406: INVALID_DATA, 404: NOT_FOUND},
+)
+@api_view(["POST"])
+def add_participants_to_event(request):
+    print(request.method)
+    add_serializer = AddParticipantSerializer(data=request.data)
+    if not add_serializer.is_valid():
+        return Response(
+            {"Error": INVALID_DATA}, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+    return add_serializer.add_participants()
