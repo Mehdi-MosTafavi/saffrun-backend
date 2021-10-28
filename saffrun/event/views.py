@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
 
-from .const import INVALID_DATA, NOT_FOUND
+from saffrun.commons.ErrorResponse import ErrorResponse
 from .models import Event
 from .serializers import (
     EventSerializer,
@@ -28,7 +28,7 @@ class CreateEvent(CreateAPIView):
 @swagger_auto_schema(
     method="get",
     query_serializer=AllEventSerializer,
-    responses={200: ManyEventSerializer, 406: INVALID_DATA},
+    responses={200: ManyEventSerializer, 406: ErrorResponse.INVALID_DATA},
 )
 @api_view(["GET"])
 def get_all_events(request):
@@ -42,7 +42,8 @@ def get_all_events(request):
     events_serializer = AllEventSerializer(data=request.GET)
     if not events_serializer.is_valid():
         return Response(
-            {"Error": INVALID_DATA}, status=status.HTTP_406_NOT_ACCEPTABLE
+            {"Error": ErrorResponse.INVALID_DATA},
+            status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     from_datetime_query = (
         Q(start_datetime__gte=events_serializer.data.get("from_datetime"))
@@ -84,7 +85,11 @@ def get_all_events(request):
 @swagger_auto_schema(
     method="post",
     request_body=AddParticipantSerializer,
-    responses={200: EventSerializer, 406: INVALID_DATA, 404: NOT_FOUND},
+    responses={
+        200: EventSerializer,
+        406: ErrorResponse.INVALID_DATA,
+        404: ErrorResponse.NOT_FOUND,
+    },
 )
 @api_view(["POST"])
 def add_participants_to_event(request):
@@ -92,6 +97,7 @@ def add_participants_to_event(request):
     add_serializer = AddParticipantSerializer(data=request.data)
     if not add_serializer.is_valid():
         return Response(
-            {"Error": INVALID_DATA}, status=status.HTTP_406_NOT_ACCEPTABLE
+            {"Error": ErrorResponse.INVALID_DATA},
+            status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     return add_serializer.add_participants()

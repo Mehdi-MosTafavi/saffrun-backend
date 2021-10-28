@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers, status
 from rest_framework.response import Response
 
-from .const import NOT_FOUND
+from saffrun.commons.ErrorResponse import ErrorResponse
 from .models import Event
 
 
@@ -43,7 +43,8 @@ class AddParticipantSerializer(serializers.Serializer):
             event = Event.objects.get(id=event_id)
         except ObjectDoesNotExist:
             return Response(
-                {"Error": NOT_FOUND}, status=status.HTTP_404_NOT_FOUND
+                {"Error": ErrorResponse.NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
             )
         verified_participant_ids = []
         for participant_id in initial_participant_id:
@@ -51,7 +52,8 @@ class AddParticipantSerializer(serializers.Serializer):
                 participant = User.objects.get(id=participant_id)
             except ObjectDoesNotExist:
                 return Response(
-                    {"Error": NOT_FOUND}, status=status.HTTP_404_NOT_FOUND
+                    {"Error": ErrorResponse.NOT_FOUND},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
             verified_participant_ids.append(participant.id)
         event.participants.add(*verified_participant_ids)
