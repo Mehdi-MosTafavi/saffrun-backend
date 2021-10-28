@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -41,13 +42,15 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "authentication",
-    'corsheaders',
+    "event",
+    "comment",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -124,6 +127,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -146,3 +152,7 @@ SWAGGER_SETTINGS = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
+}
