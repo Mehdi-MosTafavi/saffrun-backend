@@ -5,5 +5,12 @@ from django.db import models
 from saffrun.commons.BaseModel import BaseModel
 
 
-class Employee(models.Model):
+class ProfileBase(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+
+class Employee(ProfileBase):
+    pass

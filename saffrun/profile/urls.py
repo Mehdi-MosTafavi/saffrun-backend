@@ -1,6 +1,6 @@
 from django.urls import path
 
-app_name = "employee"
+app_name = "profileprofile"
 urlpatterns = [
 
 ]
