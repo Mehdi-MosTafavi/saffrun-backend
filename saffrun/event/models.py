@@ -1,16 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
+from saffrun.commons.BaseModel import BaseModel
 
 # Create your models here.
 from comment.models import Comment
-
-
-class BaseModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
 
 
 class Event(BaseModel):
