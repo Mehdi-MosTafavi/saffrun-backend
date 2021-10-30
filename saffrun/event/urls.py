@@ -14,4 +14,9 @@ urlpatterns = [
         views.add_participants_to_event,
         name="add-participants",
     ),
+    path(
+        "add-image/",
+        views.add_image_to_event,
+        name="add-image",
+    ),
 ]

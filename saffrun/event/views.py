@@ -12,6 +12,7 @@ from .serializers import (
     AllEventSerializer,
     ManyEventSerializer,
     AddParticipantSerializer,
+    AddImageSerializer,
 )
 from .utils import get_sorted_events
 
@@ -66,7 +67,6 @@ def get_all_events(request):
 )
 @api_view(["POST"])
 def add_participants_to_event(request):
-    print(request.method)
     add_serializer = AddParticipantSerializer(data=request.data)
     if not add_serializer.is_valid():
         return Response(
@@ -74,3 +74,23 @@ def add_participants_to_event(request):
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     return add_serializer.add_participants()
+
+
+@swagger_auto_schema(
+    method="post",
+    request_body=AddImageSerializer,
+    responses={
+        200: EventSerializer,
+        406: ErrorResponse.INVALID_DATA,
+        404: ErrorResponse.NOT_FOUND,
+    },
+)
+@api_view(["POST"])
+def add_image_to_event(request):
+    add_image_serializer = AddImageSerializer(data=request.data)
+    if not add_image_serializer.is_valid():
+        return Response(
+            {"Error": ErrorResponse.INVALID_DATA},
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    return add_image_serializer.add_image()
