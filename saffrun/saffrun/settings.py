@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "event",
     "comment",
     "profile",
+    "reserve",
     "corsheaders",
 ]
 
