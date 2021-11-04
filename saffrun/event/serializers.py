@@ -2,13 +2,19 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from rest_framework import serializers, status
+from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework.response import Response
 
 from saffrun.commons.ErrorResponse import ErrorResponse
 from .models import Event
+from image.serializers import ImageSerializer
+
+from image.models import Image
 
 
-class EventSerializer(serializers.ModelSerializer):
+class EventSerializer(FlexFieldsModelSerializer):
+    image = ImageSerializer()
+
     class Meta:
         model = Event
         fields = "__all__"
@@ -63,6 +69,27 @@ class AddParticipantSerializer(serializers.Serializer):
                 )
             verified_participant_ids.append(participant.id)
         event.participants.add(*verified_participant_ids)
+        event.save()
+        event_serializer = EventSerializer(instance=event)
+        return Response(event_serializer.data, status=status.HTTP_200_OK)
+
+
+class AddImageSerializer(serializers.Serializer):
+    event_id = serializers.IntegerField(required=True)
+    image_id = serializers.IntegerField(required=True)
+
+    def add_image(self):
+        event_id = self.data.get("event_id")
+        image_id = self.data.get("image_id")
+        try:
+            event = Event.objects.get(id=event_id)
+            image = Image.objects.get(id=image_id)
+        except ObjectDoesNotExist:
+            return Response(
+                {"Error": ErrorResponse.NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        event.image = image
         event.save()
         event_serializer = EventSerializer(instance=event)
         return Response(event_serializer.data, status=status.HTTP_200_OK)
