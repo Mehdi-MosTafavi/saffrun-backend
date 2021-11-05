@@ -1,19 +1,18 @@
 import json
 
-from django.contrib.auth.models import User
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics
 from authentication.serializers import RegisterSerializer
 from rest_framework.response import Response
 
-from profile.models import Employee
+from profile.models import Employee, UserProfile
 
 
 class RegisterUser(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
-    def __init__(self,):
+    def __init__(self, ):
         super().__init__()
         self.client_type = None
 
@@ -27,4 +26,7 @@ class RegisterUser(generics.CreateAPIView):
         user = serializer.save()
         if self.client_type == 'web':
             Employee.object.create(user=user)
+        else:
+            UserProfile.object.create(user=user)
         return super().perform_create(serializer)
+
