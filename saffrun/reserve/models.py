@@ -12,5 +12,5 @@ class Reservation(BaseModel):
         User, on_delete=models.CASCADE, related_name="owned_reserves"
     )
     participants = models.ManyToManyField(
-        User, related_name="participated_reserves"
+        User, related_name="participated_reserves", null=True, blank=True
     )
