@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
 
-from saffrun.commons.ErrorResponse import ErrorResponse
+from saffrun.commons.responses import ErrorResponse
 from .models import Event
 from .serializers import (
     EventSerializer,

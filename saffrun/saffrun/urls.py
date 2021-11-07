@@ -58,4 +58,5 @@ urlpatterns = [
     path("event/", include("event.urls")),
     path("profileprofile/", include("profile.urls")),
     path("image/", include("image.urls")),
+    path("reserve/", include("reserve.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

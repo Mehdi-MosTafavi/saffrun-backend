@@ -5,7 +5,7 @@ from rest_framework import serializers, status
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework.response import Response
 
-from saffrun.commons.ErrorResponse import ErrorResponse
+from saffrun.commons.responses import ErrorResponse
 from .models import Event
 from image.serializers import ImageSerializer
 
