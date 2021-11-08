@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, Count, F
+from django.utils import timezone
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from saffrun.commons.responses import ErrorResponse
@@ -108,3 +109,45 @@ class CreateReservesSerializer(serializers.Serializer):
             successful_reserve_count += response[0]
             period_collision_count += response[1]
         return successful_reserve_count, period_collision_count
+
+
+class GetAllReservesSerializer(serializers.Serializer):
+    page = serializers.IntegerField()
+    page_count = serializers.IntegerField()
+
+
+class AbstractReserveSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    fill = serializers.IntegerField()
+    available = serializers.IntegerField()
+
+    @staticmethod
+    def get_a_day_data(date, owner):
+        all = Reservation.objects.filter(owner=owner).count()
+        fill = (
+            Reservation.objects.filter(owner=owner)
+            .annotate(participant_count=Count("participants"))
+            .filter(participant_count=F("capacity"))
+            .count()
+        )
+        available = all - fill
+        return fill, available
+
+
+class ReserveFeatureSeriallizer(AbstractReserveSerializer):
+    next_reserve = serializers.TimeField()
+
+    @staticmethod
+    def get_a_day_data(date, owner):
+        fill, available = AbstractReserveSerializer.get_a_day_data(date, owner)
+        is_full_query = Q(participant_count=F("capacity"))
+        time = (
+            Reservation.objects.filter(
+                owner=owner, start_datetime__gte=timezone.now()
+            )
+            .annotate(participant_count=Count("participants"))
+            .filter(~is_full_query)
+            .order_by("start_datetime")[0]
+            .start_datetime.time
+        )
+        return fill, available, time
