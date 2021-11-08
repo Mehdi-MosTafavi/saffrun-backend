@@ -1,14 +1,22 @@
 from django.shortcuts import render
 
 # Create your views here.
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from saffrun.commons.responses import SuccessResponse, ErrorResponse
 
-from .serializers import CreateReservesSerializer
+from .models import Reservation
+from .serializers import (
+    CreateReservesSerializer,
+    GetAllReservesSerializer,
+    AbstractReserveSerializer,
+    ReserveFeatureSeriallizer,
+)
 
 
 @swagger_auto_schema(
@@ -49,3 +57,27 @@ def create_reserves(request):
         },
         status=status.HTTP_201_CREATED,
     )
+
+
+@api_view(["GET"])
+def get_all_reserves(request):
+    # reserves_serializer = GetAllReservesSerializer(data=request.data)
+    # if not reserves_serializer.is_valid():
+    #     return Response(
+    #         exception={"error": ErrorResponse.INVALID_DATA},
+    #         status=status.HTTP_406_NOT_ACCEPTABLE,
+    #     )
+    fill, available, next = ReserveFeatureSeriallizer.get_a_day_data(
+        date=timezone.datetime.now().date(), owner=request.user
+    )
+    past_reserves = Reservation.objects.filter(
+        end_datetime__lte=timezone.datetime.now()
+    ).order_by("-start_datetime")
+    feature_reserves = Reservation.objects.filter(
+        end_datetime__gt=timezone.datetime.now()
+    ).order_by("start_datetime")
+    paginator = PageNumberPagination()
+    paginator.page_size = reserves_serializer.validated_data["page_count"]
+    paginator.page = reserves_serializer.validated_data["page_count"]
+    paginated_past = paginator.paginate_queryset(past_reserves)
+    # paginated_feature = paginator.paginate_queryset(feature_reserves
