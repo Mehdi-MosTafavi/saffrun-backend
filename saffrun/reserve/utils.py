@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.utils.datetime_safe import datetime
 
 from .models import Reservation
 
