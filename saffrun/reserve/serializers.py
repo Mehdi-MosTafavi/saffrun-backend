@@ -5,7 +5,7 @@ from rest_framework import serializers, status
 from rest_framework.response import Response
 from saffrun.commons.responses import ErrorResponse
 from datetime import timedelta, datetime
-from .utils import check_collision
+from .utils import check_collision, get_a_day_data, get_a_day_data_for_feature
 from .models import Reservation
 
 
@@ -127,33 +127,6 @@ class AbstractReserveSerializer(serializers.Serializer):
     fill = serializers.IntegerField()
     available = serializers.IntegerField()
 
-    @staticmethod
-    def get_a_day_data(date, owner):
-        all = Reservation.objects.filter(owner=owner).count()
-        fill = (
-            Reservation.objects.filter(owner=owner)
-            .annotate(participant_count=Count("participants"))
-            .filter(participant_count=F("capacity"))
-            .count()
-        )
-        available = all - fill
-        return fill, available
-
 
 class ReserveFeatureSeriallizer(AbstractReserveSerializer):
     next_reserve = serializers.TimeField()
-
-    @staticmethod
-    def get_a_day_data(date, owner):
-        fill, available = AbstractReserveSerializer.get_a_day_data(date, owner)
-        is_full_query = Q(participant_count=F("capacity"))
-        time = (
-            Reservation.objects.filter(
-                owner=owner, start_datetime__gte=timezone.now()
-            )
-            .annotate(participant_count=Count("participants"))
-            .filter(~is_full_query)
-            .order_by("start_datetime")[0]
-            .start_datetime.time
-        )
-        return fill, available, time

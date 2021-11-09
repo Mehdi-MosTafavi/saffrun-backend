@@ -17,6 +17,7 @@ from .serializers import (
     AbstractReserveSerializer,
     ReserveFeatureSeriallizer,
 )
+from .utils import get_details_past, get_details_future
 
 
 @swagger_auto_schema(
@@ -59,25 +60,37 @@ def create_reserves(request):
     )
 
 
+@swagger_auto_schema(method="get", query_serializer=GetAllReservesSerializer)
 @api_view(["GET"])
 def get_all_reserves(request):
-    # reserves_serializer = GetAllReservesSerializer(data=request.data)
-    # if not reserves_serializer.is_valid():
-    #     return Response(
-    #         exception={"error": ErrorResponse.INVALID_DATA},
-    #         status=status.HTTP_406_NOT_ACCEPTABLE,
-    #     )
-    fill, available, next = ReserveFeatureSeriallizer.get_a_day_data(
-        date=timezone.datetime.now().date(), owner=request.user
+    reserves_serializer = GetAllReservesSerializer(data=request.GET)
+    if not reserves_serializer.is_valid():
+        return Response(
+            exception={"error": ErrorResponse.INVALID_DATA},
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    past_reserves = (
+        Reservation.objects.filter(end_datetime__lte=timezone.datetime.now())
+        .values("start_datetime__date")
+        .distinct()
+        .order_by("-start_datetime__date")
+        .values_list("start_datetime__date", flat=True)
     )
-    past_reserves = Reservation.objects.filter(
-        end_datetime__lte=timezone.datetime.now()
-    ).order_by("-start_datetime")
-    feature_reserves = Reservation.objects.filter(
-        end_datetime__gt=timezone.datetime.now()
-    ).order_by("start_datetime")
+    future_reserves = (
+        Reservation.objects.filter(end_datetime__gt=timezone.datetime.now())
+        .values("start_datetime__date")
+        .distinct()
+        .order_by("start_datetime__date")
+        .values_list("start_datetime__date", flat=True)
+    )
     paginator = PageNumberPagination()
     paginator.page_size = reserves_serializer.validated_data["page_count"]
     paginator.page = reserves_serializer.validated_data["page_count"]
-    paginated_past = paginator.paginate_queryset(past_reserves)
-    # paginated_feature = paginator.paginate_queryset(feature_reserves
+    paginated_past = paginator.paginate_queryset(past_reserves, request)
+    paginated_future = paginator.paginate_queryset(future_reserves, request)
+    past_result = get_details_past(paginated_past, owner=request.user)
+    future_result = get_details_future(paginated_future, owner=request.user)
+    return Response(
+        {"past": past_result, "future": future_result},
+        status=status.HTTP_200_OK,
+    )
