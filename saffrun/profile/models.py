@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
-from saffrun.commons.BaseModel import BaseModel
+from core.models import BaseModel
 
 
 class ProfileBase(BaseModel):
@@ -12,5 +12,5 @@ class ProfileBase(BaseModel):
         abstract = True
 
 
-class Employee(ProfileBase):
+class EmployeeProfile(ProfileBase):
     pass

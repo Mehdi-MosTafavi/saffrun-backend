@@ -1,4 +1,4 @@
 from django.urls import path
 
-app_name = "profileprofile"
+app_name = "profile"
 urlpatterns = []

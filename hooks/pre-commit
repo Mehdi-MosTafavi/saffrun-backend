@@ -1,6 +1,6 @@
 #!/bin/bash
 
-black -l 80 -t py38 --exclude venv/ .
+black -l 100 -t py38 --exclude venv/ .
 DELETED_FILES=""
 while read FLAG FILENAME
 do
