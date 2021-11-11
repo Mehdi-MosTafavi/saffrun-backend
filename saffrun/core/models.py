@@ -15,6 +15,7 @@ class Comment(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     text = models.TextField()
 
+
 class Image(BaseModel):
     def get_file_path(self, filename):
         return "images/" + filename

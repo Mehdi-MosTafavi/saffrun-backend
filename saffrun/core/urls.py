@@ -6,5 +6,5 @@ from . import views
 router = DefaultRouter()
 router.register(r"upload", views.ImageViewSet)
 urlpatterns = [
-    path(r"image", include(router.urls)),
+    path(r"image/", include(router.urls)),
 ]
