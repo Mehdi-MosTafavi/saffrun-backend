@@ -20,7 +20,9 @@ class ReservePeriodSerializer(serializers.Serializer):
         if data.get("duration") < 5:
             raise serializers.ValidationError(ErrorResponse.DURATION_ERROR)
         if not data.get("duration") and not data.get("period_count"):
-            raise serializers.ValidationError("")
+            raise serializers.ValidationError(
+                ErrorResponse.DURATION_OR_COUNT_ERROR
+            )
         return data
 
     def create(self, validated_data, **kwargs):

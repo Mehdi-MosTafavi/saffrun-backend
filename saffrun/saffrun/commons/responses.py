@@ -6,6 +6,9 @@ class ErrorResponse:
     DATETIME_PRIORITY_ERROR = "start must be before end"
     DATETIME_A_DAY_ERROR = "your datetime should be in a single day"
     DURATION_ERROR = "duration couldn't be less than 5 minutes"
+    DURATION_OR_COUNT_ERROR = (
+        "You should pass one of duration or count parameter to server"
+    )
 
 
 class SuccessResponse:
