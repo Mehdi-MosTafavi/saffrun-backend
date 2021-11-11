@@ -1,6 +1,6 @@
 from django.db.models import Q, Count, F
 from django.utils import timezone
-from django.utils.datetime_safe import datetime
+from datetime import timedelta
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Reservation
@@ -114,12 +114,26 @@ def get_user_busy_dates_list(user):
         .values_list("start_datetime__date", flat=True)
         .distinct()
     )
-    event_dates = (
+    event_dates_tuples = (
         Event.objects.filter(participants=user)
-        .values_list("start_datetime__date", flat=True)
+        .values_list("start_datetime__date", "end_datetime__date")
         .distinct()
     )
+    event_dates = set()
+    for event in event_dates_tuples:
+        date = event[0]
+        while date <= event[1]:
+            event_dates.add(date)
+            date += timedelta(days=1)
     dates_set = set()
     dates_set.update(reservation_dates)
     dates_set.update(event_dates)
-    return list(dates_set)
+    dates_set = list(dates_set)
+    dates_set.sort()
+    return dates_set
+
+
+def get_all_user_reserves_in_a_day(user, date):
+    return Reservation.objects.filter(
+        participants=user, start_datetime__date=date
+    ).order_by("start_datetime")
