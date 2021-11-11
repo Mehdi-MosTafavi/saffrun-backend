@@ -5,7 +5,7 @@ from rest_framework import serializers, status
 from rest_framework.response import Response
 from saffrun.commons.responses import ErrorResponse
 from datetime import timedelta, datetime
-from .utils import check_collision, get_a_day_data, get_a_day_data_for_feature
+from .utils import check_collision, get_a_day_data, get_a_day_data_for_future
 from .models import Reservation
 
 
@@ -124,11 +124,18 @@ class GetAllReservesSerializer(serializers.Serializer):
     page_count = serializers.IntegerField()
 
 
-class AbstractReserveSerializer(serializers.Serializer):
-    date = serializers.DateField()
-    fill = serializers.IntegerField()
-    available = serializers.IntegerField()
+class PastFutureReserveSerializer(serializers.Serializer):
+    class AbstractReserveSerializer(serializers.Serializer):
+        date = serializers.DateField()
+        fill = serializers.IntegerField()
+        available = serializers.IntegerField()
+
+    class ReserveFutureSeriallizer(AbstractReserveSerializer):
+        next_reserve = serializers.TimeField(allow_null=True)
+
+    past = serializers.ListField(child=AbstractReserveSerializer())
+    future = serializers.ListField(child=ReserveFutureSeriallizer())
 
 
-class ReserveFeatureSeriallizer(AbstractReserveSerializer):
-    next_reserve = serializers.TimeField()
+class DateSerializer(serializers.Serializer):
+    dates = serializers.ListField(child=serializers.DateField())
