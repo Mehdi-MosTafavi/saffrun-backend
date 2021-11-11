@@ -1,4 +1,4 @@
-from .models import Image
+from core.models import Image
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 from rest_flex_fields import FlexFieldsModelSerializer
 

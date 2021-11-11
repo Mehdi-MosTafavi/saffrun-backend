@@ -39,14 +39,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "drf_yasg",
+    "core",
     "rest_framework",
     "rest_framework.authtoken",
     "versatileimagefield",
     "authentication",
     "event",
-    "comment",
     "profile",
-    "image",
     "corsheaders",
 ]
 

@@ -9,7 +9,7 @@ from django.urls import reverse
 
 class AuthenticationTest(TestCase):
     fixtures = [
-        "authentication_fixture",
+        "users",
     ]
 
     def setUp(self) -> None:
