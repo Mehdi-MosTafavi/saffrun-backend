@@ -18,7 +18,10 @@ class ProfileBase(BaseModel):
 
 
 class UserProfile(ProfileBase):
-    pass
+    following = models.ManyToManyField('EmployeeProfile')
+
+    def __str__(self):
+        return self.user.username
 
 
 class EmployeeProfile(ProfileBase):
@@ -27,3 +30,6 @@ class EmployeeProfile(ProfileBase):
         NORMAL = 1, 'NORMAL'
 
     level = models.IntegerField(choices=LevelChoice.choices, default=LevelChoice.NORMAL)
+
+    def __str__(self):
+        return self.user.username
