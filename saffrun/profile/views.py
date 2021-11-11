@@ -28,7 +28,6 @@ class UserView(APIView):
         }))
 
     def put(self, request, *args, **kwargs):
-        print(request.data)
         user = request.user
         profile = UserProfile.objects.get(user=request.user)
         try:
