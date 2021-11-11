@@ -1,6 +1,7 @@
 from django.db.models import Q, Count, F
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
+from rest_framework.pagination import PageNumberPagination
 
 from .models import Reservation
 
@@ -69,3 +70,36 @@ def get_details_future(dates, **kwargs):
     for date in dates:
         final_list.append(get_a_day_data_for_feature(date, kwargs["owner"]))
     return final_list
+
+
+def get_past_result():
+    return (
+        Reservation.objects.filter(end_datetime__lte=timezone.datetime.now())
+        .values("start_datetime__date")
+        .distinct()
+        .order_by("-start_datetime__date")
+        .values_list("start_datetime__date", flat=True)
+    )
+
+
+def get_future_result():
+    return (
+        Reservation.objects.filter(end_datetime__gt=timezone.datetime.now())
+        .values("start_datetime__date")
+        .distinct()
+        .order_by("start_datetime__date")
+        .values_list("start_datetime__date", flat=True)
+    )
+
+
+def get_paginated_reservation_result(reserves_serializer, request):
+    past_reserves = get_past_result()
+    future_reserves = get_future_result()
+    paginator = PageNumberPagination()
+    paginator.page_size = reserves_serializer.validated_data["page_count"]
+    paginator.page = reserves_serializer.validated_data["page_count"]
+    paginated_past = paginator.paginate_queryset(past_reserves, request)
+    paginated_future = paginator.paginate_queryset(future_reserves, request)
+    past_result = get_details_past(paginated_past, owner=request.user)
+    future_result = get_details_future(paginated_future, owner=request.user)
+    return past_result, future_result
