@@ -10,6 +10,8 @@ from core.serializers import ImageSerializer
 
 from core.models import Image
 
+from authentication.serializers import ShortUserSerializer
+
 
 class EventSerializer(FlexFieldsModelSerializer):
     image = ImageSerializer()
@@ -92,3 +94,12 @@ class AddImageSerializer(serializers.Serializer):
         event.save()
         event_serializer = EventSerializer(instance=event)
         return Response(event_serializer.data, status=status.HTTP_200_OK)
+
+
+class SpecificEventSerializer(serializers.ModelSerializer):
+    # image = ImageSerializer()
+    # owner = ShortUserSerializer()
+
+    class Meta:
+        model = Event
+        fields = ["id", "title", "description"]

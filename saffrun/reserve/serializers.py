@@ -7,6 +7,9 @@ from saffrun.commons.responses import ErrorResponse
 from datetime import timedelta, datetime
 from .utils import check_collision, get_a_day_data, get_a_day_data_for_future
 from .models import Reservation
+from event.serializers import SpecificEventSerializer
+
+from authentication.serializers import ShortUserSerializer
 
 
 class ReservePeriodSerializer(serializers.Serializer):
@@ -139,3 +142,20 @@ class PastFutureReserveSerializer(serializers.Serializer):
 
 class DateSerializer(serializers.Serializer):
     dates = serializers.ListField(child=serializers.DateField())
+
+
+class DaySerializer(serializers.Serializer):
+    date = serializers.DateField()
+
+
+class ReserveSerializer(serializers.ModelSerializer):
+    # owner = ShortUserSerializer()
+
+    class Meta:
+        model = Reservation
+        fields = ["id"]
+
+
+class DayDetailSerializer(serializers.Serializer):
+    reserves = serializers.ListField(child=ReserveSerializer())
+    events = serializers.ListField(child=SpecificEventSerializer())
