@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from rest_framework import status
@@ -26,7 +25,7 @@ class EventTest(APITestCase):
 
     def test_create_event(self):
         response_event = self.client.post(
-            reverse("add-event"),
+            reverse("event:add-event"),
             data={
                 "title": "test_title",
                 "owner": self.user.id,
@@ -43,7 +42,7 @@ class EventTest(APITestCase):
         event = EventFactory(owner=self.user)
         users = UserFactory.create_batch(3)
         response_event = self.client.patch(
-            reverse("event", args=[event.id]),
+            reverse("event:event", args=[event.id]),
             data={
                 "title": "updated_title",
                 "participants": list(map(lambda user: user.id, users)),
@@ -56,7 +55,7 @@ class EventTest(APITestCase):
     def test_get_all_event(self):
         events = EventFactory.create_batch(15)
         response = self.client.get(
-            reverse("get-all-events"), data={"search_query": ""}
+            reverse("event:get-all-events"), data={"search_query": ""}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["events"]), len(events))
@@ -65,7 +64,7 @@ class EventTest(APITestCase):
         event = EventFactory()
         users = UserFactory.create_batch(4)
         response = self.client.post(
-            reverse("add-participants"),
+            reverse("event:add-participants"),
             data={
                 "event_id": event.id,
                 "participants_id": list(map(lambda user: user.id, users)),
