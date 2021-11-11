@@ -16,13 +16,20 @@ from .serializers import (
     GetAllReservesSerializer,
     DateSerializer,
     PastFutureReserveSerializer,
+    DayDetailSerializer,
+    DaySerializer,
+    ReserveSerializer,
 )
 from .utils import (
     get_details_past,
     get_details_future,
     get_paginated_reservation_result,
     get_user_busy_dates_list,
+    get_all_user_reserves_in_a_day,
 )
+from event.services import get_all_events_of_specific_day
+
+from event.serializers import SpecificEventSerializer
 
 
 @swagger_auto_schema(
@@ -120,3 +127,42 @@ def get_user_busy_dates(request):
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     return Response(data=dates_serializer.data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method="get",
+    query_serializer=DaySerializer,
+    responses={
+        status.HTTP_200_OK: DayDetailSerializer,
+        status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["GET"])
+def get_detail_of_a_day(request):
+    day_serializer = DaySerializer(data=request.GET)
+    if not day_serializer.is_valid():
+        return Response(
+            exception={
+                "error": ErrorResponse.INVALID_DATA,
+            },
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    date = day_serializer.validated_data["date"]
+    events = get_all_events_of_specific_day(request.user, date)
+    reserves = get_all_user_reserves_in_a_day(request.user, date)
+    events_serializer = SpecificEventSerializer(events, many=True)
+    reserves_serializer = ReserveSerializer(reserves, many=True)
+    day_detail_serializer = DayDetailSerializer(
+        data={
+            "events": events_serializer.data,
+            "reserves": reserves_serializer.data,
+        }
+    )
+    if not day_detail_serializer.is_valid():
+        return Response(
+            exception={
+                "error": ErrorResponse.INVALID_DATA,
+            },
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    return Response(data=day_detail_serializer.data, status=status.HTTP_200_OK)

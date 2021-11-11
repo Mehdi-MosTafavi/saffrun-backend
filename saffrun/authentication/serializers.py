@@ -19,3 +19,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         new_user.set_password(validated_data["password"])
         new_user.save()
         return new_user
+
+
+class ShortUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "last_name"]
