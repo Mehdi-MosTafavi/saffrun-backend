@@ -4,6 +4,7 @@ from django.utils.datetime_safe import datetime
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Reservation
+from event.models import Event
 
 
 def check_collision(wanted_start, wanted_end, owner):
@@ -39,12 +40,14 @@ def get_a_day_data(date, owner):
     return {"date": date, "fill": fill, "available": available}
 
 
-def get_a_day_data_for_feature(date, owner):
+def get_a_day_data_for_future(date, owner):
     day_dic = get_a_day_data(date, owner)
     is_full_query = Q(participant_count=F("capacity"))
     reserve_list = (
         Reservation.objects.filter(
-            owner=owner, start_datetime__gte=timezone.now()
+            owner=owner,
+            start_datetime__gte=timezone.now(),
+            start_datetime__date=date,
         )
         .annotate(participant_count=Count("participants"))
         .filter(~is_full_query)
@@ -53,8 +56,8 @@ def get_a_day_data_for_feature(date, owner):
     if len(reserve_list):
         time = reserve_list[0].get_start_datetime().time()
     else:
-        time = ""
-    day_dic.update({"next": time})
+        time = None
+    day_dic.update({"next_reserve": time})
     return day_dic
 
 
@@ -68,7 +71,7 @@ def get_details_past(dates, **kwargs):
 def get_details_future(dates, **kwargs):
     final_list = []
     for date in dates:
-        final_list.append(get_a_day_data_for_feature(date, kwargs["owner"]))
+        final_list.append(get_a_day_data_for_future(date, kwargs["owner"]))
     return final_list
 
 
@@ -103,3 +106,20 @@ def get_paginated_reservation_result(reserves_serializer, request):
     past_result = get_details_past(paginated_past, owner=request.user)
     future_result = get_details_future(paginated_future, owner=request.user)
     return past_result, future_result
+
+
+def get_user_busy_dates_list(user):
+    reservation_dates = (
+        Reservation.objects.filter(participants=user)
+        .values_list("start_datetime__date", flat=True)
+        .distinct()
+    )
+    event_dates = (
+        Event.objects.filter(participants=user)
+        .values_list("start_datetime__date", flat=True)
+        .distinct()
+    )
+    dates_set = set()
+    dates_set.update(reservation_dates)
+    dates_set.update(event_dates)
+    return list(dates_set)
