@@ -3,7 +3,7 @@ import json
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from profile.models import Employee, UserProfile
+from profile.models import EmployeeProfile, UserProfile
 from rest_framework.views import APIView
 
 

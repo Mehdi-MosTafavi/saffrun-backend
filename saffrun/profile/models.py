@@ -21,7 +21,7 @@ class UserProfile(ProfileBase):
     pass
 
 
-class Employee(ProfileBase):
+class EmployeeProfile(ProfileBase):
     class LevelChoice(models.IntegerChoices):
         VIP = 0, 'VIP'
         NORMAL = 1, 'NORMAL'

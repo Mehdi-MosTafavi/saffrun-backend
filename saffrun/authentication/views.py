@@ -6,7 +6,7 @@ from rest_framework import generics
 from authentication.serializers import RegisterSerializer
 from rest_framework.response import Response
 
-from profile.models import Employee, UserProfile
+from profile.models import EmployeeProfile, UserProfile
 
 
 class RegisterUser(generics.CreateAPIView):
@@ -34,7 +34,7 @@ class RegisterUser(generics.CreateAPIView):
         user = serializer.create_instance()
         profile = None
         if self.client_type == 'web':
-            profile = Employee(user=user)
+            profile = EmployeeProfile(user=user)
         elif self.client_type == 'app':
             profile = UserProfile(user=user)
         print(serializer.__dict__)
