@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 class UserView(APIView):
     permission_classes = (AllowAny, IsAuthenticated)
 
-    def get(self):
+    def get(self, *args, **kwargs):
         profile = UserProfile.objects.get(user=self.request.user)
         return Response(json.dumps({
             'username': self.request.user.username,
@@ -29,7 +29,7 @@ class UserView(APIView):
             'address': profile.address
         }))
 
-    def put(self):
+    def put(self, *args, **kwargs):
         user = self.request.user
         profile = UserProfile.objects.get(user=user)
         try:
@@ -47,7 +47,7 @@ class UserView(APIView):
                 profile.save()
             return Response(json.dumps({'status': 'Done'}))
         except KeyError as err:
-            return Response(json.dumps({'status': 'Error', 'description': f'Not enough data = {err}'}))
+            return Response(json.dumps({'status': 'Error', 'detail': f'Not enough data = {err}'}))
 
 
 class FollowEmployee(APIView):
@@ -59,16 +59,22 @@ class FollowEmployee(APIView):
     def get_user_profile(self):
         return UserProfile.objects.get(user=self.request.user)
 
-    def post(self):
+    def post(self, *args, **kwargs):
         profile = self.get_user_profile()
         employee = self.get_employee_profile()
+        if employee in profile.following.all():
+            profile.following.remove(employee)
+            profile.save()
+            return Response(json.dumps({'status': 'Error', 'detail': 'Following before'}), status=400)
         profile.following.add(employee)
         profile.save()
         return Response(json.dumps({'status': 'Done'}))
 
-    def delete(self):
+    def delete(self, *args, **kwargs):
         profile = self.get_user_profile()
         employee = self.get_employee_profile()
-        profile.following.remove(employee)
-        profile.save()
-        return Response(json.dumps({'status': 'Done'}))
+        if employee in profile.following.all():
+            profile.following.remove(employee)
+            profile.save()
+            return Response(json.dumps({'status': 'Done'}))
+        return Response(json.dumps({'status': 'Error', 'detail': 'Did not following'}), status=400)
