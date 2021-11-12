@@ -3,7 +3,7 @@ from django.db.models import Q, Count, F
 from django.utils import timezone
 from rest_framework import serializers, status
 from rest_framework.response import Response
-from saffrun.commons.responses import ErrorResponse
+from core.responses import ErrorResponse
 from datetime import timedelta, datetime
 from .utils import check_collision, get_a_day_data, get_a_day_data_for_future
 from .models import Reservation
