@@ -149,19 +149,10 @@ def get_detail_of_a_day(request):
     date = day_serializer.validated_data["date"]
     events = get_all_events_of_specific_day(request.user, date)
     reserves = get_all_user_reserves_in_a_day(request.user, date)
-    events_serializer = SpecificEventSerializer(events, many=True)
-    reserves_serializer = ReserveSerializer(reserves, many=True)
     day_detail_serializer = DayDetailSerializer(
-        data={
-            "events": events_serializer.data,
-            "reserves": reserves_serializer.data,
+        instance={
+            "events": events,
+            "reserves": reserves,
         }
     )
-    if not day_detail_serializer.is_valid():
-        return Response(
-            exception={
-                "error": ErrorResponse.INVALID_DATA,
-            },
-            status=status.HTTP_406_NOT_ACCEPTABLE,
-        )
     return Response(data=day_detail_serializer.data, status=status.HTTP_200_OK)

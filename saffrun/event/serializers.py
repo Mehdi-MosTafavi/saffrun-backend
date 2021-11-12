@@ -14,7 +14,7 @@ from authentication.serializers import ShortUserSerializer
 
 
 class EventSerializer(FlexFieldsModelSerializer):
-    image = ImageSerializer()
+    image = ImageSerializer(allow_null=True)
 
     class Meta:
         model = Event
@@ -33,7 +33,6 @@ class AllEventSerializer(serializers.Serializer):
     search_query = serializers.CharField(
         max_length=200, allow_null=False, allow_blank=True
     )
-    SortChoices.values
     owner_id = serializers.IntegerField(required=False)
     participant_id = serializers.IntegerField(required=False)
     from_datetime = serializers.DateTimeField(required=False)
@@ -96,10 +95,10 @@ class AddImageSerializer(serializers.Serializer):
         return Response(event_serializer.data, status=status.HTTP_200_OK)
 
 
-class SpecificEventSerializer(serializers.ModelSerializer):
-    # image = ImageSerializer()
-    # owner = ShortUserSerializer()
+class SpecificEventSerializer(FlexFieldsModelSerializer):
+    image = ImageSerializer(allow_null=True)
+    owner = ShortUserSerializer()
 
     class Meta:
         model = Event
-        fields = ["id", "title", "description"]
+        fields = ["id", "title", "description", "image", "owner"]
