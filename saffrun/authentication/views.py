@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics
 from authentication.serializers import RegisterSerializer, ChangePasswordSerializer
 from rest_framework.response import Response
-
+from core.exceptions import ErrorResponse
 from profile.models import EmployeeProfile, UserProfile
 
 
@@ -20,11 +20,10 @@ class RegisterUser(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         self.client_type = request.headers.get('Client', None)
         if self.client_type is None:
-            return Response(json.dumps({'error': 'No Client field in header found.'}), status=400)
+            return Response({'status': 'Error', 'detail': ErrorResponse.NO_CLIENT_HEADER}, status=400)
         return super().post(request, *args, **kwargs)
 
     def finalize_response(self, request, response, *args, **kwargs):
-        print(response.__dict__)
         response.data = {'status': 'Done'}
         return super(RegisterUser, self).finalize_response(request, response, *args, **kwargs)
 
