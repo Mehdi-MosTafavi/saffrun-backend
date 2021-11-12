@@ -75,9 +75,11 @@ def get_details_future(dates, **kwargs):
     return final_list
 
 
-def get_past_result():
+def get_past_result(owner):
     return (
-        Reservation.objects.filter(end_datetime__lte=timezone.datetime.now())
+        Reservation.objects.filter(
+            end_datetime__lte=timezone.datetime.now(), owner=owner
+        )
         .values("start_datetime__date")
         .distinct()
         .order_by("-start_datetime__date")
@@ -85,9 +87,11 @@ def get_past_result():
     )
 
 
-def get_future_result():
+def get_future_result(owner):
     return (
-        Reservation.objects.filter(end_datetime__gt=timezone.datetime.now())
+        Reservation.objects.filter(
+            end_datetime__gt=timezone.datetime.now(), owner=owner
+        )
         .values("start_datetime__date")
         .distinct()
         .order_by("start_datetime__date")
@@ -96,15 +100,19 @@ def get_future_result():
 
 
 def get_paginated_reservation_result(reserves_serializer, request):
-    past_reserves = get_past_result()
-    future_reserves = get_future_result()
+    past_reserves = get_past_result(request.user.employee_profile)
+    future_reserves = get_future_result(request.user.employee_profile)
     paginator = PageNumberPagination()
     paginator.page_size = reserves_serializer.validated_data["page_count"]
     paginator.page = reserves_serializer.validated_data["page_count"]
     paginated_past = paginator.paginate_queryset(past_reserves, request)
     paginated_future = paginator.paginate_queryset(future_reserves, request)
-    past_result = get_details_past(paginated_past, owner=request.user)
-    future_result = get_details_future(paginated_future, owner=request.user)
+    past_result = get_details_past(
+        paginated_past, owner=request.user.employee_profile
+    )
+    future_result = get_details_future(
+        paginated_future, owner=request.user.employee_profile
+    )
     return past_result, future_result
 
 
