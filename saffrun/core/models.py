@@ -12,7 +12,9 @@ class BaseModel(models.Model):
 
 
 class Comment(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="comments"
+    )
     text = models.TextField()
 
 
