@@ -99,7 +99,10 @@ class AddImageSerializer(serializers.Serializer):
 
 class SpecificEventSerializer(FlexFieldsModelSerializer):
     image = ImageSerializer(allow_null=True)
-    owner = ShortUserSerializer()
+    owner = serializers.SerializerMethodField(method_name="get_owner")
+
+    def get_owner(self, reservation):
+        return ShortUserSerializer(instance=reservation.owner.user).data
 
     class Meta:
         model = Event

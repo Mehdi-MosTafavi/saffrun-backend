@@ -4,16 +4,18 @@ from django.utils import timezone
 
 from core.models import BaseModel
 
+from profile.models import UserProfile, EmployeeProfile
+
 
 class Reservation(BaseModel):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
     capacity = models.PositiveIntegerField()
     owner = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="owned_reserves"
+        EmployeeProfile, on_delete=models.CASCADE, related_name="owned_reserves"
     )
     participants = models.ManyToManyField(
-        User, related_name="participated_reserves", blank=True
+        UserProfile, related_name="participated_reserves", blank=True
     )
 
     def get_start_datetime(self):

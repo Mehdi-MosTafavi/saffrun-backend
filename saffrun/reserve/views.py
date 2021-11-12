@@ -52,7 +52,7 @@ def create_reserves(request):
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     create_response = reserves_serializer.create(
-        reserves_serializer.validated_data, owner=request.user
+        reserves_serializer.validated_data, owner=request.user.employee_profile
     )
     if not create_response:
         return Response(
@@ -118,7 +118,7 @@ def get_all_reserves(request):
 )
 @api_view(["GET"])
 def get_user_busy_dates(request):
-    user_busy_dates = get_user_busy_dates_list(request.user)
+    user_busy_dates = get_user_busy_dates_list(request.user.user_profile)
     dates_serializer = DateSerializer(data={"dates": user_busy_dates})
     if not dates_serializer.is_valid():
         return Response(
@@ -147,8 +147,8 @@ def get_detail_of_a_day(request):
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     date = day_serializer.validated_data["date"]
-    events = get_all_events_of_specific_day(request.user, date)
-    reserves = get_all_user_reserves_in_a_day(request.user, date)
+    events = get_all_events_of_specific_day(request.user.user_profile, date)
+    reserves = get_all_user_reserves_in_a_day(request.user.user_profile, date)
     day_detail_serializer = DayDetailSerializer(
         instance={
             "events": events,
