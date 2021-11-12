@@ -23,6 +23,10 @@ class Image(BaseModel):
         return "images/" + filename
 
     image = VersatileImageField(
-        "Image", upload_to=get_file_path, ppoi_field="image_ppoi"
+        "Image",
+        upload_to=get_file_path,
+        ppoi_field="image_ppoi",
+        null=True,
+        blank=True,
     )
-    image_ppoi = PPOIField()
+    image_ppoi = PPOIField(null=True, blank=True)
