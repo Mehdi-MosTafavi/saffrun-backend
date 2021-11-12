@@ -1,5 +1,3 @@
-import json
-
 from django.db import transaction
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics

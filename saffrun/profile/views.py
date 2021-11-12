@@ -1,4 +1,3 @@
-import json
 from django.db import transaction
 from rest_framework.generics import get_object_or_404, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
