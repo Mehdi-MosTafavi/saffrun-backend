@@ -137,3 +137,33 @@ def get_all_user_reserves_in_a_day(user, date):
     return Reservation.objects.filter(
         participants=user, start_datetime__date=date
     ).order_by("start_datetime")
+
+
+def get_reserve_count_and_duration(validated_data, total_duration):
+    if validated_data["period_count"]:
+        count = int(validated_data["period_count"])
+        duration = total_duration // count
+        return count, duration
+    else:
+        duration = validated_data["duration"]
+        count = total_duration // duration
+        return count, duration
+
+
+def create_reserve_objects(
+    validated_data, total_duration, start_datetime, **kwargs
+):
+    time = start_datetime
+    count, duration = get_reserve_count_and_duration(
+        validated_data, total_duration
+    )
+    for i in range(count):
+        end_time = time + timedelta(minutes=duration)
+        Reservation.objects.create(
+            start_datetime=time,
+            end_datetime=end_time,
+            capacity=validated_data["capacity"],
+            owner=kwargs["owner"],
+        )
+        time += timedelta(minutes=duration)
+    return count

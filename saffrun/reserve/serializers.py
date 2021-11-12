@@ -5,7 +5,7 @@ from rest_framework import serializers, status
 from rest_framework.response import Response
 from core.responses import ErrorResponse
 from datetime import timedelta, datetime
-from .utils import check_collision, get_a_day_data, get_a_day_data_for_future
+from .utils import check_collision, create_reserve_objects
 from .models import Reservation
 from event.serializers import SpecificEventSerializer
 
@@ -42,23 +42,13 @@ class ReservePeriodSerializer(serializers.Serializer):
         ):
             total_duration = end_datetime - start_datetime
             total_duration = total_duration.seconds // 60
-            if validated_data["period_count"]:
-                count = int(validated_data["period_count"])
-                duration = total_duration // count
-            else:
-                duration = validated_data["duration"]
-                count = total_duration // duration
-            time = start_datetime
-            for i in range(count):
-                end_time = time + timedelta(minutes=duration)
-                Reservation.objects.create(
-                    start_datetime=time,
-                    end_datetime=end_time,
-                    capacity=validated_data["capacity"],
-                    owner=kwargs["owner"],
-                )
-                time += timedelta(minutes=duration)
-            return count
+
+            return create_reserve_objects(
+                validated_data,
+                total_duration,
+                start_datetime,
+                owner=kwargs["owner"],
+            )
         else:
             return ErrorResponse.COLLISION_CODE
 
@@ -154,10 +144,10 @@ class ReserveSerializer(serializers.ModelSerializer):
     end_time = serializers.SerializerMethodField(method_name="get_end_time")
 
     def get_start_time(self, reservation):
-        return reservation.start_datetime.time()
+        return reservation.get_start_datetime().time()
 
     def get_end_time(self, reservation):
-        return reservation.end_datetime.time()
+        return reservation.get_end_datetime().time()
 
     class Meta:
         model = Reservation
