@@ -16,9 +16,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create_instance(self):
         new_user = User.objects.create(username=self.validated_data["username"])
-        new_user.set_password(self.validated_data['password'])
+        new_user.set_password(self.validated_data["password"])
         return new_user
 
+
+class ShortUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username"]
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
     class Meta:

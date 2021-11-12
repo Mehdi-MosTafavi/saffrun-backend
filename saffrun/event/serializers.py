@@ -3,16 +3,19 @@ from django.db import models
 from rest_framework import serializers, status
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework.response import Response
+
+from core.responses import ErrorResponse
 from profile.models import UserProfile
-from core.exceptions import ErrorResponse
 from .models import Event
 from core.serializers import ImageSerializer
 
 from core.models import Image
 
+from authentication.serializers import ShortUserSerializer
+
 
 class EventSerializer(FlexFieldsModelSerializer):
-    image = ImageSerializer()
+    image = ImageSerializer(allow_null=True)
 
     class Meta:
         model = Event
@@ -31,7 +34,6 @@ class AllEventSerializer(serializers.Serializer):
     search_query = serializers.CharField(
         max_length=200, allow_null=False, allow_blank=True
     )
-    SortChoices.values
     owner_id = serializers.IntegerField(required=False)
     participant_id = serializers.IntegerField(required=False)
     from_datetime = serializers.DateTimeField(required=False)
@@ -92,3 +94,15 @@ class AddImageSerializer(serializers.Serializer):
         event.save()
         event_serializer = EventSerializer(instance=event)
         return Response(event_serializer.data, status=status.HTTP_200_OK)
+
+
+class SpecificEventSerializer(FlexFieldsModelSerializer):
+    image = ImageSerializer(allow_null=True)
+    owner = serializers.SerializerMethodField(method_name="get_owner")
+
+    def get_owner(self, reservation):
+        return ShortUserSerializer(instance=reservation.owner.user).data
+
+    class Meta:
+        model = Event
+        fields = ["id", "title", "description", "image", "owner"]

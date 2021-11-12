@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "authentication",
     "event",
     "profile",
+    "reserve",
     "corsheaders",
 ]
 

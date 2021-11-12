@@ -6,7 +6,6 @@ from core.models import BaseModel
 
 
 class ProfileBase(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone = models.CharField(max_length=11, null=True, unique=True, blank=True)
     country = models.CharField(max_length=20, null=True, blank=True)
     province = models.CharField(max_length=20, null=True, blank=True)
@@ -18,18 +17,27 @@ class ProfileBase(BaseModel):
 
 
 class UserProfile(ProfileBase):
-    following = models.ManyToManyField('EmployeeProfile', blank=True)
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="user_profile"
+    )
+    following = models.ManyToManyField("EmployeeProfile", blank=True)
 
     def __str__(self):
         return self.user.username
 
 
 class EmployeeProfile(ProfileBase):
-    class LevelChoice(models.IntegerChoices):
-        VIP = 0, 'VIP'
-        NORMAL = 1, 'NORMAL'
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="employee_profile"
+    )
 
-    level = models.IntegerField(choices=LevelChoice.choices, default=LevelChoice.NORMAL)
+    class LevelChoice(models.IntegerChoices):
+        VIP = 0, "VIP"
+        NORMAL = 1, "NORMAL"
+
+    level = models.IntegerField(
+        choices=LevelChoice.choices, default=LevelChoice.NORMAL
+    )
 
     def __str__(self):
         return self.user.username

@@ -15,38 +15,83 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserProfile',
+            name="UserProfile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, null=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('phone', models.CharField(max_length=11, null=True, unique=True)),
-                ('country', models.CharField(max_length=20, null=True)),
-                ('province', models.CharField(max_length=20, null=True)),
-                ('address', models.CharField(max_length=50, null=True)),
-                ('avatar', models.URLField(null=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, null=True),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "phone",
+                    models.CharField(max_length=11, null=True, unique=True),
+                ),
+                ("country", models.CharField(max_length=20, null=True)),
+                ("province", models.CharField(max_length=20, null=True)),
+                ("address", models.CharField(max_length=50, null=True)),
+                ("avatar", models.URLField(null=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='EmployeeProfile',
+            name="EmployeeProfile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, null=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('phone', models.CharField(max_length=11, null=True, unique=True)),
-                ('country', models.CharField(max_length=20, null=True)),
-                ('province', models.CharField(max_length=20, null=True)),
-                ('address', models.CharField(max_length=50, null=True)),
-                ('avatar', models.URLField(null=True)),
-                ('level', models.IntegerField(choices=[(0, 'VIP'), (1, 'NORMAL')], default=1)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, null=True),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "phone",
+                    models.CharField(max_length=11, null=True, unique=True),
+                ),
+                ("country", models.CharField(max_length=20, null=True)),
+                ("province", models.CharField(max_length=20, null=True)),
+                ("address", models.CharField(max_length=50, null=True)),
+                ("avatar", models.URLField(null=True)),
+                (
+                    "level",
+                    models.IntegerField(
+                        choices=[(0, "VIP"), (1, "NORMAL")], default=1
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

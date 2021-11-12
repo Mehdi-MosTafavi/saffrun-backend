@@ -8,7 +8,10 @@ class ImageSerializer(FlexFieldsModelSerializer):
         sizes=[
             ("full_size", "url"),
             ("thumbnail", "thumbnail__100x100"),
-        ]
+        ],
+        allow_null=True,
+        allow_empty_file=True,
+        required=False,
     )
 
     class Meta:

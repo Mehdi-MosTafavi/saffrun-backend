@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from profile.models import UserProfile, EmployeeProfile
+
 # Create your models here.
 from core.models import Comment, BaseModel, Image
 

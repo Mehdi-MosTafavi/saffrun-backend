@@ -6,63 +6,69 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profile', '0001_initial'),
+        ("profile", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='following',
-            field=models.ManyToManyField(blank=True, to='profile.EmployeeProfile'),
+            model_name="userprofile",
+            name="following",
+            field=models.ManyToManyField(
+                blank=True, to="profile.EmployeeProfile"
+            ),
         ),
         migrations.AlterField(
-            model_name='employeeprofile',
-            name='address',
+            model_name="employeeprofile",
+            name="address",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='employeeprofile',
-            name='avatar',
+            model_name="employeeprofile",
+            name="avatar",
             field=models.URLField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='employeeprofile',
-            name='country',
+            model_name="employeeprofile",
+            name="country",
             field=models.CharField(blank=True, max_length=20, null=True),
         ),
         migrations.AlterField(
-            model_name='employeeprofile',
-            name='phone',
-            field=models.CharField(blank=True, max_length=11, null=True, unique=True),
+            model_name="employeeprofile",
+            name="phone",
+            field=models.CharField(
+                blank=True, max_length=11, null=True, unique=True
+            ),
         ),
         migrations.AlterField(
-            model_name='employeeprofile',
-            name='province',
+            model_name="employeeprofile",
+            name="province",
             field=models.CharField(blank=True, max_length=20, null=True),
         ),
         migrations.AlterField(
-            model_name='userprofile',
-            name='address',
+            model_name="userprofile",
+            name="address",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='userprofile',
-            name='avatar',
+            model_name="userprofile",
+            name="avatar",
             field=models.URLField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='userprofile',
-            name='country',
+            model_name="userprofile",
+            name="country",
             field=models.CharField(blank=True, max_length=20, null=True),
         ),
         migrations.AlterField(
-            model_name='userprofile',
-            name='phone',
-            field=models.CharField(blank=True, max_length=11, null=True, unique=True),
+            model_name="userprofile",
+            name="phone",
+            field=models.CharField(
+                blank=True, max_length=11, null=True, unique=True
+            ),
         ),
         migrations.AlterField(
-            model_name='userprofile',
-            name='province',
+            model_name="userprofile",
+            name="province",
             field=models.CharField(blank=True, max_length=20, null=True),
         ),
     ]
