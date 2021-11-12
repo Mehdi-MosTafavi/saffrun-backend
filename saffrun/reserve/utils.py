@@ -53,7 +53,7 @@ def get_a_day_data_for_future(date, owner):
         .filter(~is_full_query)
         .order_by("start_datetime")
     )
-    if len(reserve_list):
+    if reserve_list.count():
         time = reserve_list[0].get_start_datetime().time()
     else:
         time = None

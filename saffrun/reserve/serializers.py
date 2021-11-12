@@ -20,7 +20,7 @@ class ReservePeriodSerializer(serializers.Serializer):
     capacity = serializers.IntegerField(required=True)
 
     def validate(self, data):
-        if data.get("duration") < 5:
+        if data.get("duration") and data.get("duration") < 5:
             raise serializers.ValidationError(ErrorResponse.DURATION_ERROR)
         if not data.get("duration") and not data.get("period_count"):
             raise serializers.ValidationError(
@@ -101,14 +101,14 @@ class CreateReservesSerializer(serializers.Serializer):
             day_serializer = AllReservesOfDaySerializer(data=day)
             if not day_serializer.is_valid():
                 return False
-            response = day_serializer.create(
+            new_reserve_count, new_collision_count = day_serializer.create(
                 day_serializer.validated_data,
                 owner=kwargs["owner"],
                 day_date=validated_data["start_date"] + timedelta(days=index),
                 end_date=validated_data["end_date"],
             )
-            successful_reserve_count += response[0]
-            period_collision_count += response[1]
+            successful_reserve_count += new_reserve_count
+            period_collision_count += new_collision_count
         return successful_reserve_count, period_collision_count
 
 

@@ -6,7 +6,7 @@ from authentication.serializers import (
     ChangePasswordSerializer,
 )
 from rest_framework.response import Response
-from core.exceptions import ErrorResponse
+from core.responses import ErrorResponse
 from profile.models import EmployeeProfile, UserProfile
 
 
@@ -31,7 +31,7 @@ class RegisterUser(generics.CreateAPIView):
 
     def finalize_response(self, request, response, *args, **kwargs):
         if response.status_code == 201:
-            response.data = {'status': 'Done'}
+            response.data = {"status": "Done"}
         return super().finalize_response(request, response, *args, **kwargs)
 
     def perform_create(self, serializer):

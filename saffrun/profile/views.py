@@ -2,7 +2,7 @@ from django.db import transaction
 from rest_framework.generics import get_object_or_404, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from core.exceptions import ErrorResponse
+from core.responses import ErrorResponse
 from profile.models import EmployeeProfile, UserProfile
 from rest_framework.views import APIView
 from .serializers import FollowSerializer

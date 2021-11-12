@@ -6,7 +6,6 @@ from rest_framework.response import Response
 
 from core.responses import ErrorResponse
 from profile.models import UserProfile
-from core.exceptions import ErrorResponse
 from .models import Event
 from core.serializers import ImageSerializer
 
