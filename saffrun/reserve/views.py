@@ -7,8 +7,7 @@ from rest_framework import status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-
-from saffrun.commons.responses import SuccessResponse, ErrorResponse
+from core.responses import ErrorResponse, SuccessResponse
 
 from .models import Reservation
 from .serializers import (

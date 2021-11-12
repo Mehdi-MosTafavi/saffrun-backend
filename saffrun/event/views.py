@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
 
-from core.exceptions import ErrorResponse
+from core.responses import ErrorResponse
 from .models import Event
 from .serializers import (
     EventSerializer,
