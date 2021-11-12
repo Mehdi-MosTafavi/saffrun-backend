@@ -25,7 +25,6 @@ class ShortUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username"]
 
-
 class ChangePasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
