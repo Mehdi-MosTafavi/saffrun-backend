@@ -149,13 +149,21 @@ class DaySerializer(serializers.Serializer):
 
 
 class ReserveSerializer(serializers.ModelSerializer):
-    # owner = ShortUserSerializer()
+    owner = ShortUserSerializer()
+    start_time = serializers.SerializerMethodField(method_name="get_start_time")
+    end_time = serializers.SerializerMethodField(method_name="get_end_time")
+
+    def get_start_time(self, reservation):
+        return reservation.start_datetime.time()
+
+    def get_end_time(self, reservation):
+        return reservation.end_datetime.time()
 
     class Meta:
         model = Reservation
-        fields = ["id"]
+        fields = ["id", "owner", "start_time", "end_time"]
 
 
 class DayDetailSerializer(serializers.Serializer):
-    reserves = serializers.ListField(child=ReserveSerializer())
-    events = serializers.ListField(child=SpecificEventSerializer())
+    reserves = ReserveSerializer(many=True)
+    events = SpecificEventSerializer(many=True)
