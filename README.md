@@ -15,3 +15,9 @@ password: 12345678
 host: localhost
 
 port: 5432
+
+## user fixtures
+
+password: TEST!@#$
+admin password: admin
+DO NOT USE `admin` ACCOUNT FOR TESTING PORPOSE.
