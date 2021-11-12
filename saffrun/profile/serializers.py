@@ -2,5 +2,5 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 
-class RegisterSerializer(serializers.Serializer):
+class FollowSerializer(serializers.Serializer):
     employee_id = serializers.IntegerField()
