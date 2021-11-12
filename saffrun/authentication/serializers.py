@@ -14,10 +14,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         "password": {"write_only": True, "min_length": 8},
     }
 
-    def create(self, validated_data):
-        new_user = User.objects.create(username=validated_data["username"])
-        new_user.set_password(validated_data["password"])
-        new_user.save()
+    def create_instance(self):
+        new_user = User.objects.create(username=self.validated_data["username"])
+        new_user.set_password(self.validated_data["password"])
         return new_user
 
 
@@ -25,3 +24,11 @@ class ShortUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username"]
+
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "password",
+        ]

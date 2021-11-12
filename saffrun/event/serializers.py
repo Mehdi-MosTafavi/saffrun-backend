@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from rest_framework import serializers, status
@@ -6,6 +5,8 @@ from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework.response import Response
 
 from core.responses import ErrorResponse
+from profile.models import UserProfile
+from core.exceptions import ErrorResponse
 from .models import Event
 from core.serializers import ImageSerializer
 
@@ -62,7 +63,7 @@ class AddParticipantSerializer(serializers.Serializer):
         verified_participant_ids = []
         for participant_id in initial_participant_id:
             try:
-                participant = User.objects.get(id=participant_id)
+                participant = UserProfile.objects.get(user__id=participant_id)
             except ObjectDoesNotExist:
                 return Response(
                     {"Error": ErrorResponse.NOT_FOUND},

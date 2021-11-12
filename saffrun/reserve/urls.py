@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+app_name = "reserve"
 urlpatterns = [
     path("create/", views.create_reserves, name="create-reserves"),
     path("get-all-reserves/", views.get_all_reserves, name="get-all-reserves"),
