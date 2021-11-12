@@ -36,7 +36,6 @@ class RegisterUser(generics.CreateAPIView):
             profile = EmployeeProfile(user=user)
         elif self.client_type == 'app':
             profile = UserProfile(user=user)
-        print(serializer.__dict__)
         with transaction.atomic():
             user.save()
             profile.save()
