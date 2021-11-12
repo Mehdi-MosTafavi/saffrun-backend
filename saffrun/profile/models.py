@@ -7,18 +7,18 @@ from core.models import BaseModel
 
 class ProfileBase(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=11, null=True, unique=True)
-    country = models.CharField(max_length=20, null=True)
-    province = models.CharField(max_length=20, null=True)
-    address = models.CharField(max_length=50, null=True)
-    avatar = models.URLField(null=True)
+    phone = models.CharField(max_length=11, null=True, unique=True, blank=True)
+    country = models.CharField(max_length=20, null=True, blank=True)
+    province = models.CharField(max_length=20, null=True, blank=True)
+    address = models.CharField(max_length=50, null=True, blank=True)
+    avatar = models.URLField(null=True, blank=True)
 
     class Meta:
         abstract = True
 
 
 class UserProfile(ProfileBase):
-    following = models.ManyToManyField('EmployeeProfile')
+    following = models.ManyToManyField('EmployeeProfile', blank=True)
 
     def __str__(self):
         return self.user.username
