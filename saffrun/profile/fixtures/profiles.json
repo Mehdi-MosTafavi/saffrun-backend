@@ -1,0 +1,130 @@
+[{
+    "model": "profile.userprofile",
+    "pk": 1,
+    "fields": {
+        "created_at": "2021-11-12T06:09:43.441Z",
+        "updated_at": "2021-11-12T06:09:43.441Z",
+        "user": 9,
+        "phone": "09121211212",
+        "country": "iran",
+        "province": "tehran",
+        "address": null,
+        "avatar": null,
+        "following": []
+    }
+},
+{
+    "model": "profile.userprofile",
+    "pk": 2,
+    "fields": {
+        "created_at": "2021-11-12T06:11:55.381Z",
+        "updated_at": "2021-11-12T06:11:55.381Z",
+        "user": 3,
+        "phone": "09171711717",
+        "country": "south africa",
+        "province": "bushehr",
+        "address": null,
+        "avatar": null,
+        "following": []
+    }
+},
+{
+    "model": "profile.userprofile",
+    "pk": 3,
+    "fields": {
+        "created_at": "2021-11-12T06:12:20.726Z",
+        "updated_at": "2021-11-12T06:12:20.726Z",
+        "user": 7,
+        "phone": "09383838383",
+        "country": "isfahan",
+        "province": "kashan",
+        "address": null,
+        "avatar": null,
+        "following": [
+            1,
+            2
+        ]
+    }
+},
+{
+    "model": "profile.userprofile",
+    "pk": 4,
+    "fields": {
+        "created_at": "2021-11-12T06:15:33.117Z",
+        "updated_at": "2021-11-12T06:15:33.117Z",
+        "user": 8,
+        "phone": "09202002000",
+        "country": "tabriz",
+        "province": "tabriz",
+        "address": null,
+        "avatar": null,
+        "following": [
+            1,
+            2
+        ]
+    }
+},
+{
+    "model": "profile.userprofile",
+    "pk": 5,
+    "fields": {
+        "created_at": "2021-11-12T06:15:53.786Z",
+        "updated_at": "2021-11-12T06:15:53.786Z",
+        "user": 5,
+        "phone": "09000000000",
+        "country": "israel",
+        "province": "israel",
+        "address": null,
+        "avatar": null,
+        "following": [
+            2
+        ]
+    }
+},
+{
+    "model": "profile.userprofile",
+    "pk": 6,
+    "fields": {
+        "created_at": "2021-11-12T06:16:23.849Z",
+        "updated_at": "2021-11-12T06:16:23.849Z",
+        "user": 6,
+        "phone": "09201001000",
+        "country": "karaj",
+        "province": "karaj",
+        "address": null,
+        "avatar": null,
+        "following": [
+            1
+        ]
+    }
+},
+{
+    "model": "profile.employeeprofile",
+    "pk": 1,
+    "fields": {
+        "created_at": "2021-11-12T06:07:47.190Z",
+        "updated_at": "2021-11-12T06:07:47.190Z",
+        "user": 2,
+        "phone": "09383935400",
+        "country": "USA",
+        "province": "Texas",
+        "address": "khoone johny ina",
+        "avatar": "https://www.pngfind.com/pngs/b/5-52097_avatar-png.png",
+        "level": 1
+    }
+},
+{
+    "model": "profile.employeeprofile",
+    "pk": 2,
+    "fields": {
+        "created_at": "2021-11-12T06:10:19.494Z",
+        "updated_at": "2021-11-12T06:10:19.494Z",
+        "user": 4,
+        "phone": "09131311313",
+        "country": "I.R.S",
+        "province": "semnan",
+        "address": null,
+        "avatar": null,
+        "level": 1
+    }
+}]
