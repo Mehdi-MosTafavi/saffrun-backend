@@ -17,7 +17,6 @@ from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
-from django.views.static import serve
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -55,8 +54,8 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("api/auth/", include("authentication.urls")),
-    path("event/", include("event.urls")),
-    path("profileprofile/", include("profile.urls")),
-    path("image/", include("image.urls")),
-    path("reserve/", include("reserve.urls")),
+    path("api/event/", include("event.urls")),
+    path("api/profile/", include("profile.urls")),
+    path("api/core/", include("core.urls")),
+    path("api/reserve/", include("reserve.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

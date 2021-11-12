@@ -1,11 +1,10 @@
-from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
 
-from saffrun.commons.responses import ErrorResponse
+from core.exceptions import ErrorResponse
 from .models import Event
 from .serializers import (
     EventSerializer,

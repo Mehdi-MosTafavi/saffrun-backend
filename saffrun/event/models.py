@@ -1,9 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
-from saffrun.commons.BaseModel import BaseModel
 
 # Create your models here.
-from comment.models import Comment
+from core.models import Comment, BaseModel, Image
 
 
 class Event(BaseModel):
@@ -13,7 +12,7 @@ class Event(BaseModel):
     )
     description = models.TextField(blank=True, null=True)
     image = models.OneToOneField(
-        "image.Image",
+        "core.Image",
         related_name="event",
         on_delete=models.CASCADE,
         null=True,
