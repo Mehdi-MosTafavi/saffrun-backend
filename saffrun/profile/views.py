@@ -14,8 +14,23 @@ from .serializers import FollowSerializer
 class UserView(APIView):
     permission_classes = (AllowAny, IsAuthenticated)
 
+    def get_profile(self, headers):
+        mode = headers["Client"]
+        if mode == "web":
+            profile = EmployeeProfile.objects.get(user=self.request.user)
+        elif mode == "app":
+            profile = UserProfile.objects.get(user=self.request.user)
+        return profile
+
     def get(self, request):
-        profile = UserProfile.objects.get(user=self.request.user)
+        try:
+            profile = self.get_profile(self.request.headers)
+        except KeyError as err:
+            return Response(
+                {
+                    "status": "Error",
+                    "detail": ErrorResponse.NO_CLIENT_HEADER
+                }, status=400)
         return Response(
             {
                 "username": self.request.user.username,
@@ -31,7 +46,14 @@ class UserView(APIView):
 
     def put(self, request):
         user = self.request.user
-        profile = UserProfile.objects.get(user=user)
+        try:
+            profile = self.get_profile(self.request.headers)
+        except KeyError as err:
+            return Response(
+                {
+                    "status": "Error",
+                    "detail": ErrorResponse.NO_CLIENT_HEADER
+                }, status=400)
         try:
             user.username = self.request.data["username"]
             user.first_name = self.request.data["first_name"]
