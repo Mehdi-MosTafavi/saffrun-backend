@@ -12,11 +12,9 @@ class Event(BaseModel):
         UserProfile, related_name="participated_events", blank=True
     )
     description = models.TextField(blank=True, null=True)
-    image = models.OneToOneField(
+    images = models.ManyToManyField(
         "core.Image",
-        related_name="event",
-        on_delete=models.CASCADE,
-        null=True,
+        related_name="events",
         blank=True,
     )
     discount = models.PositiveIntegerField()

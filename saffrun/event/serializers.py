@@ -90,7 +90,7 @@ class AddImageSerializer(serializers.Serializer):
                 {"Error": ErrorResponse.NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        event.image = image
+        event.images.add(image)
         event.save()
         event_serializer = EventSerializer(instance=event)
         return Response(event_serializer.data, status=status.HTTP_200_OK)
