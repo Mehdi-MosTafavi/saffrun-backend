@@ -87,10 +87,10 @@ WSGI_APPLICATION = "saffrun.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "saffrun-database",
-        "USER": "saffrun-user",
+        "NAME": "postgres",
+        "USER": "postgres",
         "PASSWORD": "12345678",
-        "HOST": "db",
+        "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": 5432,
     }
 }

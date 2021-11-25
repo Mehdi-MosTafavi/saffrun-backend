@@ -7,19 +7,19 @@ services:
       - ./data/db:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=saffrun-database
-      - POSTGRES_USER=saffrun-user
-      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     ports:
-      - "5432:5432"
+      - "15432:5432"
   web:
     build: .
     tty: true
     environment:
-      - PYTHONUNBUFFERED=1
-    command: "/bin/bash -c tail -f"
+      - DB_HOST=db
+    command: /bin/bash -c "cd saffrun && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/code
     ports:
-      - "8080:8080"
+      - "8000:8000"
     depends_on:
       - db
