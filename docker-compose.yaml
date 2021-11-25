@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:12
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=saffrun-database
+      - POSTGRES_USER=saffrun-user
+      - POSTGRES_PASSWORD=12345678
+    ports:
+      - "5432:5432"
+  web:
+    build: .
+    tty: true
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: "/bin/bash -c tail -f"
+    volumes:
+      - .:/code
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
