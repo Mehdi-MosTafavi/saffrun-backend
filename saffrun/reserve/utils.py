@@ -188,7 +188,7 @@ def get_nearest_free_reserve(admin_id):
             return None
         return reserves[0]
     except:
-        pass
+        return False
 
 
 def get_next_seven_days_free_reserves(admin_id):
@@ -204,4 +204,14 @@ def get_next_seven_days_free_reserves(admin_id):
         reserves_list[index].append(reserve)
     return reserves_list
 
-
+def reserve_it(user, reserve_id):
+    try:
+        reservation = Reservation.objects.get(id=reserve_id)
+        if reservation.capacity > len(reservation.participants.all()):
+            reservation.participants.add(user)
+            reservation.save()
+            return True
+        else:
+            return False
+    except:
+        return False

@@ -180,3 +180,6 @@ class NextSevenDaysSerializer(serializers.Serializer):
     nearest = ReserveAbstractSerializer(allow_null=True)
     next_seven_days = serializers.ListField(child=serializers.ListField(child=ReserveAbstractSerializer()))
 
+class ReserveEmployeeSerializer(serializers.Serializer):
+    reserve_id = serializers.IntegerField()
+

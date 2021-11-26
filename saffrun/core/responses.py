@@ -13,10 +13,12 @@ class ErrorResponse:
     FOLLOWING_BEFORE = "Following before"
     NOT_ENOUGH_DATA = "Not enough data"
     NO_CLIENT_HEADER = "No Client field in header"
+    FULL_CAPACITY = "Full of capacity"
 
 
 class SuccessResponse:
     CREATED = "created!"
+    RESERVED = 'reserved!'
 
     @staticmethod
     def reserve_created_message(count: int):
