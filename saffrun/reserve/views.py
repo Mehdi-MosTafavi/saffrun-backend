@@ -17,7 +17,7 @@ from .serializers import (
     PastFutureReserveSerializer,
     DayDetailSerializer,
     DaySerializer,
-    ReserveSerializer, GetAdminSerializer, NextSevenDaysSerializer, get_reserve_abstract_serializer,
+    ReserveSerializer, GetAdminSerializer, NextSevenDaysSerializer, get_reserve_abstract_dictionary,
 )
 from .utils import (
     get_details_past,
@@ -177,15 +177,14 @@ def get_next_seven_days(request):
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     admin_id = admin_serializer.validated_data.get('admin_id')
-    next_seven_day_serializer = get_next_days_api(admin_id)
     next_reserve = get_nearest_free_reserve(admin_id)
     next_seven_days_list = get_next_seven_days_free_reserves(admin_id)
-    nearest_serializer = get_reserve_abstract_serializer(next_reserve)
-    next_seven_days_serializer_list = []
+    nearest_dictionary = get_reserve_abstract_dictionary(next_reserve)
+    next_seven_days_dictionary_list = []
     for i in range(7):
-        next_seven_days_serializer_list.append(list(map(get_reserve_abstract_serializer, next_seven_days_list[i])))
-    next_seven_day_serializer = NextSevenDaysSerializer(data={
-        'nearest': nearest_serializer,
-        'next_seven_days': next_seven_days_serializer_list
-    })
-    return Response(next_seven_day_serializer.data, status=status.HTTP_200_OK)
+        next_seven_days_dictionary_list.append(list(map(get_reserve_abstract_dictionary, next_seven_days_list[i])))
+    final_data = {
+        'nearest': nearest_dictionary,
+        'next_seven_days': next_seven_days_dictionary_list
+    }
+    return Response(final_data, status=status.HTTP_200_OK)

@@ -197,10 +197,10 @@ def get_next_seven_days_free_reserves(admin_id):
     reserves = Reservation.objects.filter(owner=admin,
                                           start_datetime__date__lt=today_date + timedelta(
                                               days=7)).annotate(participant_count=Count("participants")).filter(
-        participant_count=F("capacity"))
+        participant_count=F("capacity")).order_by('start_datetime')
     reserves_list = [[] for i in range(7)]
     for reserve in reserves.all():
-        index = (reserve.start_datetime.date - today_date).days()
+        index = (reserve.start_datetime.date() - today_date).days
         reserves_list[index].append(reserve)
     return reserves_list
 
