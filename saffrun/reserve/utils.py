@@ -182,8 +182,8 @@ def create_reserve_objects(
 def get_nearest_free_reserve(admin_id):
     try:
         admin = EmployeeProfile.objects.get(user=admin_id)
-        reserves = Reservation.objects.filter(owner=admin).annotate(participant_count=Count("participants")).filter(
-            participant_count=F("capacity")).order_by('start_datetime')
+        reserves = Reservation.objects.filter(owner=admin, start_datetime__gte=timezone.datetime.now()).annotate(participant_count=Count("participants")).filter(
+            participant_count__lt=F("capacity")).order_by('start_datetime')
         if reserves.count() == 0:
             return None
         return reserves[0]
@@ -195,8 +195,9 @@ def get_next_seven_days_free_reserves(admin_id):
     admin = EmployeeProfile.objects.get(user=admin_id)
     today_date = timezone.datetime.now().date()
     reserves = Reservation.objects.filter(owner=admin,
+                                          start_datetime__gte=timezone.datetime.now(),
                                           start_datetime__date__lt=today_date + timedelta(
-                                              days=7)).annotate(participant_count=Count("participants")).filter(
+                                              days=7)).annotate(participant_count__lt=Count("participants")).filter(
         participant_count=F("capacity")).order_by('start_datetime')
     reserves_list = [[] for i in range(7)]
     for reserve in reserves.all():
