@@ -17,14 +17,14 @@ from .serializers import (
     PastFutureReserveSerializer,
     DayDetailSerializer,
     DaySerializer,
-    ReserveSerializer,
+    ReserveSerializer, GetAdminSerializer, NextSevenDaysSerializer, get_reserve_abstract_serializer,
 )
 from .utils import (
     get_details_past,
     get_details_future,
     get_paginated_reservation_result,
     get_user_busy_dates_list,
-    get_all_user_reserves_in_a_day,
+    get_all_user_reserves_in_a_day, get_nearest_free_reserve, get_next_seven_days_free_reserves,
 )
 from event.services import get_all_events_of_specific_day
 
@@ -156,3 +156,36 @@ def get_detail_of_a_day(request):
         }
     )
     return Response(data=day_detail_serializer.data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method="get",
+    query_serializer=GetAdminSerializer,
+    responses={
+        status.HTTP_200_OK: NextSevenDaysSerializer,
+        status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["GET"])
+def get_next_seven_days(request):
+    admin_serializer = GetAdminSerializer(data=request.GET)
+    if not admin_serializer.is_valid():
+        return Response(
+            exception={
+                "error": ErrorResponse.INVALID_DATA,
+            },
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    admin_id = admin_serializer.validated_data.get('admin_id')
+    next_seven_day_serializer = get_next_days_api(admin_id)
+    next_reserve = get_nearest_free_reserve(admin_id)
+    next_seven_days_list = get_next_seven_days_free_reserves(admin_id)
+    nearest_serializer = get_reserve_abstract_serializer(next_reserve)
+    next_seven_days_serializer_list = []
+    for i in range(7):
+        next_seven_days_serializer_list.append(list(map(get_reserve_abstract_serializer, next_seven_days_list[i])))
+    next_seven_day_serializer = NextSevenDaysSerializer(data={
+        'nearest': nearest_serializer,
+        'next_seven_days': next_seven_days_serializer_list
+    })
+    return Response(next_seven_day_serializer.data, status=status.HTTP_200_OK)
