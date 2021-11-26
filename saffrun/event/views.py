@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
 
-from core.responses import ErrorResponse
+from core.responses import ErrorResponse, SuccessResponse
 from .models import Event
 from .serializers import (
     EventSerializer,
@@ -13,17 +13,31 @@ from .serializers import (
     AddParticipantSerializer,
     AddImageSerializer,
 )
-from .utils import get_sorted_events
+from .utils import get_sorted_events, create_an_event
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
-
-class CreateEvent(CreateAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+@swagger_auto_schema(
+    method="post",
+    request_body=EventSerializer,
+    responses={
+        201: SuccessResponse.CREATED,
+        406: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(['POST'])
+def create_event(request):
+    event_serializer = EventSerializer(data=request.data)
+    if not event_serializer.is_valid():
+        return Response(
+            {"Error": ErrorResponse.INVALID_DATA},
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    create_an_event(event_serializer.validated_data, request.user.employee_profile)
+    return Response({'success': SuccessResponse.CREATED}, status=status.HTTP_201_CREATED)
 
 
 @swagger_auto_schema(
