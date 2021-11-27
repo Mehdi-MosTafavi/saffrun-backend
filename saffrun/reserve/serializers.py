@@ -160,3 +160,26 @@ class ReserveSerializer(serializers.ModelSerializer):
 class DayDetailSerializer(serializers.Serializer):
     reserves = ReserveSerializer(many=True)
     events = SpecificEventSerializer(many=True)
+
+class GetAdminSerializer(serializers.Serializer):
+    admin_id = serializers.IntegerField()
+
+class ReserveAbstractSerializer(serializers.Serializer):
+    reserve_id = serializers.IntegerField()
+    datetime = serializers.DateTimeField()
+
+
+def get_reserve_abstract_dictionary(reserve):
+    return {
+        'reserve_id': reserve.id,
+        'datetime': reserve.get_start_datetime()
+    } if reserve else ''
+
+
+class NextSevenDaysSerializer(serializers.Serializer):
+    nearest = ReserveAbstractSerializer(allow_null=True)
+    next_seven_days = serializers.ListField(child=serializers.ListField(child=ReserveAbstractSerializer()))
+
+class ReserveEmployeeSerializer(serializers.Serializer):
+    reserve_id = serializers.IntegerField()
+

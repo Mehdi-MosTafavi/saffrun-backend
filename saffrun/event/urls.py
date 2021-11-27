@@ -8,7 +8,7 @@ urlpatterns = [
         views.EventRetrieveUpdateDestroyAPIView.as_view(),
         name="event",
     ),
-    path("add/", views.CreateEvent.as_view(), name="add-event"),
+    path("add/", views.create_event, name="add-event"),
     path("get-all/", views.get_all_events, name="get-all-events"),
     path(
         "add-participants/",
