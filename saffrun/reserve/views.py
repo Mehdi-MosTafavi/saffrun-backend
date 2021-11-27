@@ -1,35 +1,25 @@
-from django.shortcuts import render
-
-# Create your views here.
-from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, serializers
+from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from core.responses import ErrorResponse, SuccessResponse
 
-from .models import Reservation
 from .serializers import (
     CreateReservesSerializer,
     GetAllReservesSerializer,
     DateSerializer,
     PastFutureReserveSerializer,
     DayDetailSerializer,
-    DaySerializer,
-    ReserveSerializer, GetAdminSerializer, NextSevenDaysSerializer, get_reserve_abstract_dictionary,
+    DaySerializer, GetAdminSerializer, NextSevenDaysSerializer,
     ReserveEmployeeSerializer,
 )
 from .utils import (
-    get_details_past,
-    get_details_future,
     get_paginated_reservation_result,
     get_user_busy_dates_list,
-    get_all_user_reserves_in_a_day, get_nearest_free_reserve, get_next_seven_days_free_reserves, reserve_it,
+    get_all_user_reserves_in_a_day, get_nearest_free_reserve, get_next_n_days_free_reserves, reserve_it,
+    get_reserve_abstract_dictionary
 )
 from event.services import get_all_events_of_specific_day
-
-from event.serializers import SpecificEventSerializer
 
 
 @swagger_auto_schema(
@@ -179,7 +169,7 @@ def get_next_seven_days(request):
         )
     admin_id = admin_serializer.validated_data.get('admin_id')
     next_reserve = get_nearest_free_reserve(admin_id)
-    next_seven_days_list = get_next_seven_days_free_reserves(admin_id)
+    next_seven_days_list = get_next_n_days_free_reserves(admin_id, 7)
     nearest_dictionary = get_reserve_abstract_dictionary(next_reserve)
     next_seven_days_dictionary_list = []
     for i in range(7):
