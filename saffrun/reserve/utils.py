@@ -182,7 +182,8 @@ def create_reserve_objects(
 def get_nearest_free_reserve(admin_id):
     try:
         admin = EmployeeProfile.objects.get(user=admin_id)
-        reserves = Reservation.objects.filter(owner=admin, start_datetime__gte=timezone.datetime.now()).annotate(participant_count=Count("participants")).filter(
+        reserves = Reservation.objects.filter(owner=admin, start_datetime__gte=timezone.datetime.now()).annotate(
+            participant_count=Count("participants")).filter(
             participant_count__lt=F("capacity")).order_by('start_datetime')
         if reserves.count() == 0:
             return None
@@ -197,13 +198,14 @@ def get_next_n_days_free_reserves(admin_id, days):
     reserves = Reservation.objects.filter(owner=admin,
                                           start_datetime__gte=timezone.datetime.now(),
                                           start_datetime__date__lt=today_date + timedelta(
-                                              days=days)).annotate(participant_count__lt=Count("participants")).filter(
-        participant_count=F("capacity")).order_by('start_datetime')
+                                              days=days)).annotate(participant_count=Count("participants")).filter(
+        participant_count__lt=F("capacity")).order_by('start_datetime')
     reserves_list = [[] for i in range(days)]
     for reserve in reserves.all():
         index = (reserve.start_datetime.date() - today_date).days
         reserves_list[index].append(reserve)
     return reserves_list
+
 
 def reserve_it(user, reserve_id):
     try:
@@ -217,10 +219,9 @@ def reserve_it(user, reserve_id):
     except:
         return False
 
+
 def get_reserve_abstract_dictionary(reserve):
     return {
         'reserve_id': reserve.id,
         'datetime': reserve.get_start_datetime()
     } if reserve else ''
-
-
