@@ -20,6 +20,13 @@ class EventSerializer(FlexFieldsModelSerializer):
         model = Event
         fields = ['title', 'description', 'discount', 'start_datetime', 'end_datetime']
 
+class EventImageSerializer(FlexFieldsModelSerializer):
+    images = ImageSerializer(many=True)
+
+    class Meta:
+        model = Event
+        fields = ['title', 'description', 'discount', 'start_datetime', 'end_datetime', 'images']
+
 
 class ManyEventSerializer(serializers.Serializer):
     events = EventSerializer(many=True)
