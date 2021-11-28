@@ -11,14 +11,14 @@ from .serializers import (
     AllEventSerializer,
     ManyEventSerializer,
     AddParticipantSerializer,
-    AddImageSerializer,
+    AddImageSerializer, EventImageSerializer,
 )
 from .utils import get_sorted_events, create_an_event
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    serializer_class = EventImageSerializer
 
 @swagger_auto_schema(
     method="post",
@@ -64,7 +64,7 @@ def get_all_events(request):
     events = get_sorted_events(events_serializer)
 
     return Response(
-        {"events": EventSerializer(instance=events, many=True).data},
+        {"events": EventImageSerializer(instance=events, many=True).data},
         status=status.HTTP_200_OK,
     )
 
