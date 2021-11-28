@@ -169,13 +169,6 @@ class ReserveAbstractSerializer(serializers.Serializer):
     datetime = serializers.DateTimeField()
 
 
-def get_reserve_abstract_dictionary(reserve):
-    return {
-        'reserve_id': reserve.id,
-        'datetime': reserve.get_start_datetime()
-    } if reserve else ''
-
-
 class NextSevenDaysSerializer(serializers.Serializer):
     nearest = ReserveAbstractSerializer(allow_null=True)
     next_seven_days = serializers.ListField(child=serializers.ListField(child=ReserveAbstractSerializer()))
