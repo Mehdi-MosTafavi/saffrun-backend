@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "profile",
     "reserve",
     "corsheaders",
+    "category",
 ]
 
 MIDDLEWARE = [
@@ -89,7 +90,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "postgres",
         "USER": "postgres",
-        "PASSWORD": "12345678",
+        "PASSWORD": "123456",
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": 5432,
     }

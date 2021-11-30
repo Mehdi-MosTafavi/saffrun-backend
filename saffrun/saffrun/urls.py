@@ -58,4 +58,5 @@ urlpatterns = [
     path("api/profile/", include("profile.urls")),
     path("api/core/", include("core.urls")),
     path("api/reserve/", include("reserve.urls")),
+    path("api/category/", include("category.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
