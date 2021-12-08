@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   db:
-    image: postgres:12
+    image: m.docker-registry.ir/postgres:12
     volumes:
       - ./data/db:/var/lib/postgresql/data
     environment:
