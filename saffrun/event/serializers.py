@@ -15,17 +15,30 @@ from authentication.serializers import ShortUserSerializer
 
 
 class EventSerializer(FlexFieldsModelSerializer):
-
     class Meta:
         model = Event
-        fields = ['title', 'description', 'discount', 'start_datetime', 'end_datetime']
+        fields = [
+            "title",
+            "description",
+            "discount",
+            "start_datetime",
+            "end_datetime",
+        ]
+
 
 class EventImageSerializer(FlexFieldsModelSerializer):
     images = ImageSerializer(many=True)
 
     class Meta:
         model = Event
-        fields = ['title', 'description', 'discount', 'start_datetime', 'end_datetime', 'images']
+        fields = [
+            "title",
+            "description",
+            "discount",
+            "start_datetime",
+            "end_datetime",
+            "images",
+        ]
 
 
 class ManyEventSerializer(serializers.Serializer):

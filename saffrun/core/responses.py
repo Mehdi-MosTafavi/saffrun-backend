@@ -18,7 +18,7 @@ class ErrorResponse:
 
 class SuccessResponse:
     CREATED = "created!"
-    RESERVED = 'reserved!'
+    RESERVED = "reserved!"
 
     @staticmethod
     def reserve_created_message(count: int):
