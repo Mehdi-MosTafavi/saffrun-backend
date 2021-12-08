@@ -27,10 +27,9 @@ class UserView(APIView):
             profile = self.get_profile(self.request.headers)
         except KeyError as err:
             return Response(
-                {
-                    "status": "Error",
-                    "detail": ErrorResponse.NO_CLIENT_HEADER
-                }, status=400)
+                {"status": "Error", "detail": ErrorResponse.NO_CLIENT_HEADER},
+                status=400,
+            )
         return Response(
             {
                 "username": self.request.user.username,
@@ -50,10 +49,9 @@ class UserView(APIView):
             profile = self.get_profile(self.request.headers)
         except KeyError as err:
             return Response(
-                {
-                    "status": "Error",
-                    "detail": ErrorResponse.NO_CLIENT_HEADER
-                }, status=400)
+                {"status": "Error", "detail": ErrorResponse.NO_CLIENT_HEADER},
+                status=400,
+            )
         try:
             user.username = self.request.data["username"]
             user.first_name = self.request.data["first_name"]

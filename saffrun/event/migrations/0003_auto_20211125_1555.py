@@ -6,18 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0002_auto_20211112_0942'),
-        ('event', '0002_auto_20211112_1402'),
+        ("core", "0002_auto_20211112_0942"),
+        ("event", "0002_auto_20211112_1402"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='event',
-            name='image',
+            model_name="event",
+            name="image",
         ),
         migrations.AddField(
-            model_name='event',
-            name='images',
-            field=models.ManyToManyField(blank=True, related_name='events', to='core.Image'),
+            model_name="event",
+            name="images",
+            field=models.ManyToManyField(
+                blank=True, related_name="events", to="core.Image"
+            ),
         ),
     ]

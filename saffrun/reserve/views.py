@@ -10,14 +10,19 @@ from .serializers import (
     DateSerializer,
     PastFutureReserveSerializer,
     DayDetailSerializer,
-    DaySerializer, GetAdminSerializer, NextSevenDaysSerializer,
+    DaySerializer,
+    GetAdminSerializer,
+    NextSevenDaysSerializer,
     ReserveEmployeeSerializer,
 )
 from .utils import (
     get_paginated_reservation_result,
     get_user_busy_dates_list,
-    get_all_user_reserves_in_a_day, get_nearest_free_reserve, get_next_n_days_free_reserves, reserve_it,
-    get_reserve_abstract_dictionary
+    get_all_user_reserves_in_a_day,
+    get_nearest_free_reserve,
+    get_next_n_days_free_reserves,
+    reserve_it,
+    get_reserve_abstract_dictionary,
 )
 from event.services import get_all_events_of_specific_day
 
@@ -167,16 +172,18 @@ def get_next_seven_days(request):
             },
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    admin_id = admin_serializer.validated_data.get('admin_id')
+    admin_id = admin_serializer.validated_data.get("admin_id")
     next_reserve = get_nearest_free_reserve(admin_id)
     next_seven_days_list = get_next_n_days_free_reserves(admin_id, 7)
     nearest_dictionary = get_reserve_abstract_dictionary(next_reserve)
     next_seven_days_dictionary_list = []
     for i in range(7):
-        next_seven_days_dictionary_list.append(list(map(get_reserve_abstract_dictionary, next_seven_days_list[i])))
+        next_seven_days_dictionary_list.append(
+            list(map(get_reserve_abstract_dictionary, next_seven_days_list[i]))
+        )
     final_data = {
-        'nearest': nearest_dictionary,
-        'next_seven_days': next_seven_days_dictionary_list
+        "nearest": nearest_dictionary,
+        "next_seven_days": next_seven_days_dictionary_list,
     }
     return Response(final_data, status=status.HTTP_200_OK)
 
@@ -200,7 +207,15 @@ def reserve_employee(request):
             },
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    is_reserved = reserve_it(request.user.user_profile,reserve_employee_serializer.validated_data.get('reserve_id'))
+    is_reserved = reserve_it(
+        request.user.user_profile,
+        reserve_employee_serializer.validated_data.get("reserve_id"),
+    )
     if is_reserved:
-        return Response({'success': SuccessResponse.RESERVED}, status=status.HTTP_200_OK)
-    return Response({'error': ErrorResponse.FULL_CAPACITY}, status=status.HTTP_411_LENGTH_REQUIRED)
+        return Response(
+            {"success": SuccessResponse.RESERVED}, status=status.HTTP_200_OK
+        )
+    return Response(
+        {"error": ErrorResponse.FULL_CAPACITY},
+        status=status.HTTP_411_LENGTH_REQUIRED,
+    )

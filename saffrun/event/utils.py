@@ -50,11 +50,12 @@ def get_sorted_events(events_serializer):
         events_serializer.data.get("sort").value
     )
 
+
 def create_an_event(validated_data, owner):
     Event.objects.create(
-        start_datetime=validated_data['start_datetime'],
-        end_datetime=validated_data['end_datetime'],
-        title=validated_data['title'],
-        discount=validated_data['discount'],
-        owner=owner
+        start_datetime=validated_data["start_datetime"],
+        end_datetime=validated_data["end_datetime"],
+        title=validated_data["title"],
+        discount=validated_data["discount"],
+        owner=owner,
     )

@@ -11,7 +11,8 @@ from .serializers import (
     AllEventSerializer,
     ManyEventSerializer,
     AddParticipantSerializer,
-    AddImageSerializer, EventImageSerializer,
+    AddImageSerializer,
+    EventImageSerializer,
 )
 from .utils import get_sorted_events, create_an_event
 
@@ -19,6 +20,7 @@ from .utils import get_sorted_events, create_an_event
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
     serializer_class = EventImageSerializer
+
 
 @swagger_auto_schema(
     method="post",
@@ -28,7 +30,7 @@ class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         406: ErrorResponse.INVALID_DATA,
     },
 )
-@api_view(['POST'])
+@api_view(["POST"])
 def create_event(request):
     event_serializer = EventSerializer(data=request.data)
     if not event_serializer.is_valid():
@@ -36,8 +38,12 @@ def create_event(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    create_an_event(event_serializer.validated_data, request.user.employee_profile)
-    return Response({'success': SuccessResponse.CREATED}, status=status.HTTP_201_CREATED)
+    create_an_event(
+        event_serializer.validated_data, request.user.employee_profile
+    )
+    return Response(
+        {"success": SuccessResponse.CREATED}, status=status.HTTP_201_CREATED
+    )
 
 
 @swagger_auto_schema(
