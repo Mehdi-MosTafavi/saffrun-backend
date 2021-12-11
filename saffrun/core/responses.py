@@ -12,8 +12,8 @@ class ErrorResponse:
     DID_NOT_FOLLOW = "Did not following"
     FOLLOWING_BEFORE = "Following before"
     NOT_ENOUGH_DATA = "Not enough data"
-    NO_CLIENT_HEADER = "No Client field in header"
     FULL_CAPACITY = "Full of capacity"
+    NOT_PROFILE_FOUND = "No profile found for user"
 
 
 class SuccessResponse:
