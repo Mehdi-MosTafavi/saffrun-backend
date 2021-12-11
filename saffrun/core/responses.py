@@ -12,13 +12,12 @@ class ErrorResponse:
     DID_NOT_FOLLOW = "Did not following"
     FOLLOWING_BEFORE = "Following before"
     NOT_ENOUGH_DATA = "Not enough data"
-    NO_CLIENT_HEADER = "No Client field in header"
     FULL_CAPACITY = "Full of capacity"
     USER_CLIENT = "The User should be client"
     USER_EMPLOYEE = "The User should be employee"
     INVALID_TYPE = 'type value could only be 1 or 2'
     SERVER_ERROR = "Najva server is not responsible"
-
+    NOT_PROFILE_FOUND = "No profile found for user"
 
 
 class SuccessResponse:
