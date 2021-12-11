@@ -14,20 +14,21 @@ from .serializers import FollowSerializer
 class UserView(APIView):
     permission_classes = (AllowAny, IsAuthenticated)
 
-    def get_profile(self, headers):
-        mode = headers["Client"]
-        if mode == "web":
+    def get_profile(self):
+        try:
             profile = EmployeeProfile.objects.get(user=self.request.user)
-        elif mode == "app":
+        except EmployeeProfile.DoesNotExist:
             profile = UserProfile.objects.get(user=self.request.user)
+        if profile is None:
+            raise Exception('No profile Found!')
         return profile
 
     def get(self, request):
         try:
-            profile = self.get_profile(self.request.headers)
+            profile = self.get_profile()
         except KeyError as err:
             return Response(
-                {"status": "Error", "detail": ErrorResponse.NO_CLIENT_HEADER},
+                {"status": "Error", "detail": ErrorResponse.NOT_PROFILE_FOUND},
                 status=400,
             )
         return Response(
@@ -46,10 +47,10 @@ class UserView(APIView):
     def put(self, request):
         user = self.request.user
         try:
-            profile = self.get_profile(self.request.headers)
+            profile = self.get_profile()
         except KeyError as err:
             return Response(
-                {"status": "Error", "detail": ErrorResponse.NO_CLIENT_HEADER},
+                {"status": "Error", "detail": ErrorResponse.NOT_PROFILE_FOUND},
                 status=400,
             )
         try:
@@ -71,7 +72,7 @@ class UserView(APIView):
                 {
                     "status": "Error",
                     "detail": ErrorResponse.NOT_ENOUGH_DATA,
-                    "field:": err,
+                    "field:": str(err),
                 },
                 status=400,
             )
