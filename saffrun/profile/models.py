@@ -21,6 +21,7 @@ class UserProfile(ProfileBase):
         User, on_delete=models.CASCADE, related_name="user_profile"
     )
     following = models.ManyToManyField("EmployeeProfile", blank=True)
+    notification_token = models.CharField(max_length=200, blank=True, null=True)
 
     def __str__(self):
         return self.user.username

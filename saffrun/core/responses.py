@@ -14,6 +14,8 @@ class ErrorResponse:
     NOT_ENOUGH_DATA = "Not enough data"
     NO_CLIENT_HEADER = "No Client field in header"
     FULL_CAPACITY = "Full of capacity"
+    USER_CLIENT = "The User should be client"
+    USER_EMPLOYEE = "The User should be employee"
 
 
 class SuccessResponse:
