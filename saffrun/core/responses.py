@@ -18,6 +18,8 @@ class ErrorResponse:
     INVALID_TYPE = 'type value could only be 1 or 2'
     SERVER_ERROR = "Najva server is not responsible"
     NOT_PROFILE_FOUND = "No profile found for user"
+    USER_CLIENT = "The User should be client"
+    USER_EMPLOYEE = "The User should be employee"
 
 
 class SuccessResponse:

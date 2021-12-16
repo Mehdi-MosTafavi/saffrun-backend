@@ -8,6 +8,7 @@ from core.configs import Config
 
 def add_token_to_user(user_profile: UserProfile, token: str):
     user_profile.notification_token = token
+<<<<<<< HEAD
     user_profile.save()
 
 
