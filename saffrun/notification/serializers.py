@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Notification
+from profile.serializers import EmployeeProfileSerializer
 
 
 class AddNotificationTokenSerializer(serializers.Serializer):
@@ -20,14 +21,15 @@ class EmployeeGetNotificationsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ["title", "text", "type", "url", "receivers_count"]
+        fields = ["title", "text", "type", "url", "receivers_count", "created_at"]
+
 
 class ClientGetNotificationSerializer(serializers.ModelSerializer):
-    sender = serializers.StringRelatedField()
+    sender = EmployeeProfileSerializer()
 
     class Meta:
         model = Notification
-        fields = ["title", "text", "type", "url", "sender"]
+        fields = ["title", "text", "type", "url", "sender", "created_at"]
 
 class GetNotificationsSerializer(serializers.Serializer):
     page = serializers.IntegerField()

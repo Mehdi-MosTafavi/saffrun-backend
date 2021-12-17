@@ -13,4 +13,15 @@ urlpatterns = [
         views.SendNotification.as_view(),
         name="send-notification",
     ),
+    path(
+        "employee/get-notifications/",
+        views.EmployeeGetNotifications.as_view(),
+        name="employee-get-notifications",
+    ),
+    path(
+        "client/get-notifications/",
+        views.ClientGetNotifications.as_view(),
+        name="client-get-notifications",
+    ),
+
 ]
