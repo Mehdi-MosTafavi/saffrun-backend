@@ -53,13 +53,14 @@ class SendNotification(APIView):
         _type = notification_serializer.validated_data.get("type")
         text = notification_serializer.validated_data.get("text")
         title = notification_serializer.validated_data.get("title")
+        url = notification_serializer.validated_data.get("url")
         if not (_type == 1 or _type == 2):
             return Response(
                 {"status": "Error", "detail": ErrorResponse.INVALID_TYPE},
                 status=400,
             )
         if is_user_employee(request.user):
-            sent = send_notif(request.user.employee_profile, _type, title, text)
+            sent = send_notif(request.user.employee_profile, _type, title, text, url)
             if sent:
                 return Response(
                     {"status": "Done"}, status=200,
