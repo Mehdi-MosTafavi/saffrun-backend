@@ -8,15 +8,14 @@ from core.configs import Config
 
 def add_token_to_user(user_profile: UserProfile, token: str):
     user_profile.notification_token = token
-<<<<<<< HEAD
     user_profile.save()
 
 
 def send_notif(employee: EmployeeProfile, _type: int, title: str, text: str, url: str):
     try:
         client = Najva()
-        client.apikey = "63336392-f07c-48ed-9111-7d5f3b128b8d"
-        client.token = "36c8a10b8f40441e51b21fb4568d511d42b80589"
+        client.apikey = Config.najva_api_key
+        client.token = Config.najva_token
         if _type == 1:
             followers_token = list(employee.followers.all().values_list("notification_token", flat=True))
             client.send_to_users(title, text, url,
