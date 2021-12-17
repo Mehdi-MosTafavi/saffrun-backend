@@ -20,7 +20,7 @@ class UserProfile(ProfileBase):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="user_profile"
     )
-    following = models.ManyToManyField("EmployeeProfile", blank=True)
+    following = models.ManyToManyField("EmployeeProfile", blank=True, related_name="followers")
     notification_token = models.CharField(max_length=200, blank=True, null=True)
 
     def __str__(self):

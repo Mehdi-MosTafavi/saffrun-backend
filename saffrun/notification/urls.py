@@ -6,6 +6,11 @@ urlpatterns = [
     path(
         "set-user-notification-token/",
         views.SetUserNotificationToken.as_view(),
-        name="event",
+        name="set-user-notification-token",
+    ),
+    path(
+        "send-notification/",
+        views.SendNotification.as_view(),
+        name="send-notification",
     ),
 ]

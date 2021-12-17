@@ -16,6 +16,9 @@ class ErrorResponse:
     FULL_CAPACITY = "Full of capacity"
     USER_CLIENT = "The User should be client"
     USER_EMPLOYEE = "The User should be employee"
+    INVALID_TYPE = 'type value could only be 1 or 2'
+    SERVER_ERROR = "Najva server is not responsible"
+
 
 
 class SuccessResponse:
