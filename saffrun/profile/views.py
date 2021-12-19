@@ -82,17 +82,17 @@ class FollowEmployee(GenericAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = FollowSerializer
 
-    def get_employee_profile(self):
+    def _get_employee_profile(self):
         return get_object_or_404(
             EmployeeProfile, id=self.request.data["employee_id"]
         )
 
     def get_user_profile(self):
-        return UserProfile.objects.get(user=self.request.user)
+        return get_object_or_404(UserProfile, user=self.request.user)
 
     def post(self, request):
         profile = self.get_user_profile()
-        employee = self.get_employee_profile()
+        employee = self._get_employee_profile()
         if employee in profile.following.all():
             profile.following.remove(employee)
             profile.save()
@@ -106,7 +106,7 @@ class FollowEmployee(GenericAPIView):
 
     def delete(self, request):
         profile = self.get_user_profile()
-        employee = self.get_employee_profile()
+        employee = self._get_employee_profile()
         if employee in profile.following.all():
             profile.following.remove(employee)
             profile.save()
