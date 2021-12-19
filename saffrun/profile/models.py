@@ -8,6 +8,7 @@ from core.models import BaseModel
 class ProfileBase(BaseModel):
     phone = models.CharField(max_length=11, null=True, unique=True, blank=True)
     country = models.CharField(max_length=20, null=True, blank=True)
+    city = models.CharField(max_length=20, null=True, blank=True)
     province = models.CharField(max_length=20, null=True, blank=True)
     address = models.CharField(max_length=50, null=True, blank=True)
     avatar = models.URLField(null=True, blank=True)

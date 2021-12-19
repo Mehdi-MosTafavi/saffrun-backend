@@ -83,15 +83,24 @@ class FollowEmployee(GenericAPIView):
     serializer_class = FollowSerializer
 
     def _get_employee_profile(self):
-        return get_object_or_404(
-            EmployeeProfile, id=self.request.data["employee_id"]
-        )
+        return get_object_or_404(EmployeeProfile, id=self.request.data["employee_id"])
 
-    def get_user_profile(self):
+    def _get_user_profile(self):
         return get_object_or_404(UserProfile, user=self.request.user)
 
+    def get(self, request):
+        profile = get_object_or_404(EmployeeProfile, user=self.request.user)
+        followers = profile.userprofile_set.all()
+        follwers_dict = {}
+        for index, follower in enumerate(followers):
+            follwers_dict[index+1] = {'username': follower.user.username,
+                                      'email': follower.user.email,
+                                      'city': follower.city,
+                                      'avatar': follower.avatar}
+        return Response(follwers_dict)
+
     def post(self, request):
-        profile = self.get_user_profile()
+        profile = self._get_user_profile()
         employee = self._get_employee_profile()
         if employee in profile.following.all():
             profile.following.remove(employee)
@@ -105,7 +114,7 @@ class FollowEmployee(GenericAPIView):
         return Response({"status": "Done"})
 
     def delete(self, request):
-        profile = self.get_user_profile()
+        profile = self._get_user_profile()
         employee = self._get_employee_profile()
         if employee in profile.following.all():
             profile.following.remove(employee)
