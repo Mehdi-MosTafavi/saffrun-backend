@@ -91,13 +91,13 @@ class FollowEmployee(GenericAPIView):
     def get(self, request):
         profile:EmployeeProfile = get_object_or_404(EmployeeProfile, user=self.request.user)
         followers = profile.followers.all()
-        follwers_dict = {}
+        follwers_list = []
         for index, follower in enumerate(followers):
-            follwers_dict[index+1] = {'username': follower.user.username,
+            follwers_list.append({'username': follower.user.username,
                                       'email': follower.user.email,
                                       'city': follower.city,
-                                      'avatar': follower.avatar}
-        return Response(follwers_dict)
+                                      'avatar': follower.avatar})
+        return Response(follwers_list)
 
     def post(self, request):
         profile = self._get_user_profile()
