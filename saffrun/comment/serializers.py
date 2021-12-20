@@ -1,37 +1,50 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import models
-from rest_framework import serializers, status
-from rest_flex_fields import FlexFieldsModelSerializer
-from rest_framework.response import Response
+from rest_framework import serializers
 
 from .models import Comment
 
 
+class ReplyRelatedField(serializers.RelatedField):
+    """
+    A custom field to use for the 'tagged_object' generic relationship
+    """
+
+    def to_representation(self, value):
+        """
+        Serialize tagged objects to their respective serializer formats
+        :param value:
+        :return:
+            serializer.data
+        """
+        if isinstance(value, Comment):
+            return {
+                'id': value.id,
+                'content': value.content,
+                'time': value.updated_at
+            }
+        raise Exception('Unexpected type of tagged object')
+
+
 class CommentSerializer(serializers.ModelSerializer):
+    reply = ReplyRelatedField(queryset=Comment.objects.all())
+
     class Meta:
         model = Comment
         fields = ["id",
                   "content",
-                  "reply",
+                  'reply',
                   "created_at",
                   ]
 
 
-class CommentPostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = ["content",
-                  "owner_id",
-                  "event_id",
-                  ]
+class CommentPostSerializer(serializers.Serializer):
+    owner_id = serializers.IntegerField(allow_null=True,required=False)
+    event_id = serializers.IntegerField(allow_null=True,required=False)
+    content = serializers.CharField()
 
 
-class ReplyPostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = ["id",
-                  "content",
-                  ]
+class ReplyPostSerializer(serializers.Serializer):
+    comment_id = serializers.IntegerField()
+    content = serializers.CharField()
 
 
 class ManyCommentSerializer(serializers.Serializer):
@@ -44,3 +57,9 @@ class AllCommentSerializer(serializers.Serializer):
     )
 
 
+class EventCommentSerializer(serializers.Serializer):
+    event_id = serializers.IntegerField()
+
+
+class AdminCommentSerializer(serializers.Serializer):
+    admin_id = serializers.IntegerField()

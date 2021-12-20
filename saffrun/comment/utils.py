@@ -1,39 +1,42 @@
-from django.db.models import Q
+from event.models import Event
+from profile.models import EmployeeProfile
 
 from .models import Comment
-from ..event.models import Event
-from ..profile.models import EmployeeProfile
 
 
 def save_a_comment(validated_data: map, user):
     if "event_id" in validated_data:
         event = Event.objects.get(id=validated_data["event_id"])
-        Comment.objects.create(
+        comment = Comment.objects.create(
             content=validated_data["content"],
             is_parent=True,
             event=event,
             user=user
         )
+        return comment
+
     elif "owner_id" in validated_data:
         profile = EmployeeProfile.objects.get(id=validated_data["owner_id"])
-        Comment.objects.create(
+        comment = Comment.objects.create(
             content=validated_data["content"],
             is_parent=True,
             owner=profile,
             user=user
         )
+        return comment
     else:
         raise Exception("incorrect args")
 
 
 def save_a_reply(validated_data: map, owner, comment):
-    reply = Comment.objects.create(
+    reply_2: Comment = Comment.objects.create(
         content=validated_data["content"],
         is_parent=False,
         owner=comment.owner,
         event=comment.event
     )
-    comment.reply=reply
+    reply_2.save()
+    comment.reply = reply_2
     comment.save()
 
 

@@ -3,8 +3,8 @@ from django.db import models
 # Create your models here.
 from core.models import Comment, BaseModel, Image
 
-from saffrun.event.models import Event
-from saffrun.profile.models import UserProfile, EmployeeProfile
+from event.models import Event
+from profile.models import UserProfile, EmployeeProfile
 
 
 class Comment(BaseModel):
@@ -20,5 +20,6 @@ class Comment(BaseModel):
         Event, on_delete=models.CASCADE, related_name="comment_event", null=True, blank=True
     )
     reply = models.OneToOneField(
-        Comment, on_delete=models.CASCADE, related_name="replied_comment", null=True, blank=True
+        'self', on_delete=models.CASCADE, related_name="replied_comment", null=True, blank=True,
+        unique=True, db_index=True
     )

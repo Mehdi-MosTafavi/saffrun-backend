@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "profile",
     "reserve",
     "corsheaders",
+    'comment'
 ]
 
 MIDDLEWARE = [
@@ -87,8 +88,8 @@ WSGI_APPLICATION = "saffrun.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "postgres",
-        "USER": "postgres",
+        "NAME": "saffrun-database",
+        "USER": "saffrun-user",
         "PASSWORD": "12345678",
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": 5432,
