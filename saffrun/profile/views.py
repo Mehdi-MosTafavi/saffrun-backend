@@ -89,8 +89,8 @@ class FollowEmployee(GenericAPIView):
         return get_object_or_404(UserProfile, user=self.request.user)
 
     def get(self, request):
-        profile = get_object_or_404(EmployeeProfile, user=self.request.user)
-        followers = profile.userprofile_set.all()
+        profile:EmployeeProfile = get_object_or_404(EmployeeProfile, user=self.request.user)
+        followers = profile.followers.all()
         follwers_dict = {}
         for index, follower in enumerate(followers):
             follwers_dict[index+1] = {'username': follower.user.username,
