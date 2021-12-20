@@ -2,6 +2,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from core.responses import ErrorResponse, SuccessResponse
@@ -15,6 +16,7 @@ from .serializers import (
     EventImageSerializer,
 )
 from .utils import get_sorted_events, create_an_event
+from core.services import is_user_employee
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -38,18 +40,18 @@ def create_event(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    create_an_event(
+    event_id = create_an_event(
         event_serializer.validated_data, request.user.employee_profile
     )
     return Response(
-        {"success": SuccessResponse.CREATED}, status=status.HTTP_201_CREATED
+        {"success": SuccessResponse.CREATED, "event_id": event_id}, status=status.HTTP_201_CREATED
     )
 
 
 @swagger_auto_schema(
     method="get",
     query_serializer=AllEventSerializer,
-    responses={200: ManyEventSerializer, 406: ErrorResponse.INVALID_DATA},
+    responses={200: ManyEventSerializer, 406: ErrorResponse.INVALID_DATA, 400:ErrorResponse.USER_EMPLOYEE},
 )
 @api_view(["GET"])
 def get_all_events(request):
@@ -58,7 +60,7 @@ def get_all_events(request):
     You have to provide search_query(could be blank but not null) and a sort field
     sort 1 = by title (default)
     sort 2 = by start_date
-    participant_id, owner_id, from_datetime, until_datetime are optional field
+    participant_id, from_datetime, until_datetime are optional field
     """
     events_serializer = AllEventSerializer(data=request.GET)
     if not events_serializer.is_valid():
@@ -66,13 +68,22 @@ def get_all_events(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
+    if is_user_employee(request.user):
+        events = get_sorted_events(events_serializer, request.user.employee_profile)
+        paginator = PageNumberPagination()
+        paginator.page_size = events_serializer.validated_data["page_count"]
+        paginator.page = events_serializer.validated_data["page"]
+        events = paginator.paginate_queryset(events, request)
+        return Response(
+            {"events": EventImageSerializer(instance=events, many=True).data},
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+            status=400,
+        )
 
-    events = get_sorted_events(events_serializer)
-
-    return Response(
-        {"events": EventImageSerializer(instance=events, many=True).data},
-        status=status.HTTP_200_OK,
-    )
 
 
 @swagger_auto_schema(

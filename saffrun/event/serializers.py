@@ -50,14 +50,21 @@ class AllEventSerializer(serializers.Serializer):
         TTL = "title"
         SDT = "start_datetime"
 
+    class TypeChoices(models.TextChoices):
+        ALL = "all"
+        RNN = "running"
+        DON = "done"
+
     search_query = serializers.CharField(
         max_length=200, allow_null=False, allow_blank=True
     )
-    owner_id = serializers.IntegerField(required=False)
     participant_id = serializers.IntegerField(required=False)
     from_datetime = serializers.DateTimeField(required=False)
     until_datetime = serializers.DateTimeField(required=False)
     sort = serializers.ChoiceField(SortChoices, default=SortChoices.TTL)
+    type = serializers.ChoiceField(TypeChoices, default=TypeChoices.ALL)
+    page = serializers.IntegerField()
+    page_count = serializers.IntegerField()
 
 
 class AddParticipantSerializer(serializers.Serializer):
