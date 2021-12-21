@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.utils import timezone
 
 from .models import Event
 
@@ -19,12 +20,8 @@ def filter_until_datetime_query(events_serializer):
     )
 
 
-def filter_owner_query(events_serializer):
-    return (
-        Q(owner=events_serializer.data.get("owner_id"))
-        if events_serializer.data.get("owner_id")
-        else Q()
-    )
+def filter_owner_query(owner):
+    return Q(owner=owner)
 
 
 def filter_participant_query(events_serializer):
@@ -35,18 +32,28 @@ def filter_participant_query(events_serializer):
     )
 
 
-def final_filter_query(events_serializer):
+def filter_type_query(events_serializer):
+    if events_serializer.data.get("type").value == "all":
+        return Q()
+    if events_serializer.data.get("type").value == "running":
+        return Q(start_datetime__lt=timezone.datetime.now()) & Q(end_datetime__gt=timezone.datetime.now())
+    if events_serializer.data.get("type").value == "done":
+        return Q(end_datetime__lt=timezone.datetime.now())
+
+
+def final_filter_query(events_serializer, owner):
     return (
-        Q(title__icontains=events_serializer.data.get("search_query"))
-        & filter_from_datetime_query(events_serializer)
-        & filter_until_datetime_query(events_serializer)
-        & filter_owner_query(events_serializer)
-        & filter_participant_query(events_serializer)
+            Q(title__icontains=events_serializer.data.get("search_query"))
+            & filter_from_datetime_query(events_serializer)
+            & filter_until_datetime_query(events_serializer)
+            & filter_owner_query(owner)
+            & filter_participant_query(events_serializer)
+            & filter_type_query(events_serializer)
     )
 
 
-def get_sorted_events(events_serializer):
-    return Event.objects.filter(final_filter_query(events_serializer)).order_by(
+def get_sorted_events(events_serializer, owner):
+    return Event.objects.filter(final_filter_query(events_serializer, owner)).order_by(
         events_serializer.data.get("sort").value
     )
 

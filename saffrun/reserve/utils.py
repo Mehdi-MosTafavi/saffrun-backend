@@ -106,7 +106,7 @@ def get_paginated_reservation_result(reserves_serializer, request):
     future_reserves = get_future_result(request.user.employee_profile)
     paginator = PageNumberPagination()
     paginator.page_size = reserves_serializer.validated_data["page_count"]
-    paginator.page = reserves_serializer.validated_data["page_count"]
+    paginator.page = reserves_serializer.validated_data["page"]
     paginated_past = paginator.paginate_queryset(past_reserves, request)
     paginated_future = paginator.paginate_queryset(future_reserves, request)
     past_result = get_details_past(
