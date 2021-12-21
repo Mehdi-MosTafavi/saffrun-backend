@@ -66,4 +66,4 @@ def create_an_event(validated_data, owner):
         discount=validated_data["discount"],
         owner=owner,
     )
-    return event.id
+    return event

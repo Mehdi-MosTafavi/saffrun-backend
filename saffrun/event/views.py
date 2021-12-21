@@ -1,11 +1,12 @@
+from core.responses import ErrorResponse, SuccessResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from core.responses import ErrorResponse, SuccessResponse
 from .models import Event
 from .serializers import (
     EventSerializer,
@@ -40,11 +41,11 @@ def create_event(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    event_id = create_an_event(
+    event: Event = create_an_event(
         event_serializer.validated_data, request.user.employee_profile
     )
     return Response(
-        {"success": SuccessResponse.CREATED, "event_id": event_id}, status=status.HTTP_201_CREATED
+        {"event_id": event.id , "success": SuccessResponse.CREATED}, status=status.HTTP_201_CREATED
     )
 
 
