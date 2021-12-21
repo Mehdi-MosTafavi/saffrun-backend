@@ -1,44 +1,49 @@
+from authentication.serializers import ShortUserSerializer
+from core.models import Image
+from core.responses import ErrorResponse
+from core.serializers import ImageSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from rest_framework import serializers, status
+from profile.models import UserProfile
 from rest_flex_fields import FlexFieldsModelSerializer
+from rest_framework import serializers, status
 from rest_framework.response import Response
 
-from core.responses import ErrorResponse
-from profile.models import UserProfile
 from .models import Event
-from core.serializers import ImageSerializer
-
-from core.models import Image
-
-from authentication.serializers import ShortUserSerializer
 
 
 class EventSerializer(FlexFieldsModelSerializer):
     class Meta:
         model = Event
         fields = [
-            "title",
+            'title',
             "description",
             "discount",
             "start_datetime",
             "end_datetime",
         ]
+
 
 
 class EventImageSerializer(FlexFieldsModelSerializer):
     images = ImageSerializer(many=True)
+    participants = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
         fields = [
+            'id',
             "title",
             "description",
             "discount",
+            'participants',
             "start_datetime",
             "end_datetime",
             "images",
         ]
+
+    def get_participants(self, obj):
+        return obj.participants.all().count()
 
 
 class ManyEventSerializer(serializers.Serializer):
