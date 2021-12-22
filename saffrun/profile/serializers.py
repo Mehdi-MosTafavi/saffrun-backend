@@ -6,6 +6,7 @@ from .models import UserProfile
 class FollowSerializer(serializers.Serializer):
     employee_id = serializers.IntegerField()
 
+
 class EmployeeProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField("get_full_name")
     username = serializers.SerializerMethodField("get_username")
@@ -25,3 +26,7 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ["id", "username", "full_name"]
+
+
+class RemoveFollowerSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
