@@ -1,0 +1,56 @@
+[
+  {
+    "model": "category.category",
+    "pk": 1,
+    "fields": {
+      "created_at": "2021-11-12T06:09:43.441Z",
+      "updated_at": "2021-11-12T06:09:43.441Z",
+      "name": "سرگرمی"
+    }
+  },
+  {
+    "model": "category.category",
+    "pk": 2,
+    "fields": {
+      "created_at": "2021-11-12T06:09:43.441Z",
+      "updated_at": "2021-11-12T06:09:43.441Z",
+      "name": "پزشکی"
+    }
+  },
+  {
+    "model": "category.category",
+    "pk": 3,
+    "fields": {
+      "created_at": "2021-11-12T06:09:43.441Z",
+      "updated_at": "2021-11-12T06:09:43.441Z",
+      "name": "اجتماعی"
+    }
+  },
+  {
+    "model": "category.category",
+    "pk": 4,
+    "fields": {
+      "created_at": "2021-11-12T06:09:43.441Z",
+      "updated_at": "2021-11-12T06:09:43.441Z",
+      "name": "خدمات"
+    }
+  },
+  {
+    "model": "category.category",
+    "pk": 5,
+    "fields": {
+      "created_at": "2021-11-12T06:09:43.441Z",
+      "updated_at": "2021-11-12T06:09:43.441Z",
+      "name": "آزاد"
+    }
+  },
+  {
+    "model": "category.category",
+    "pk": 6,
+    "fields": {
+      "created_at": "2021-11-12T06:09:43.441Z",
+      "updated_at": "2021-11-12T06:09:43.441Z",
+      "name": "لوازم ساختمانی"
+    }
+  }
+]

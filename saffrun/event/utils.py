@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django.utils import timezone
+from rest_framework.generics import get_object_or_404
 
 from .models import Event
 
@@ -64,6 +65,7 @@ def create_an_event(validated_data, owner):
         end_datetime=validated_data["end_datetime"],
         title=validated_data["title"],
         discount=validated_data["discount"],
+        category = get_object_or_404(id=validated_data["category_id"]),
         owner=owner,
     )
     return event

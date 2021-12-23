@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 
 from .serializers import FollowSerializer, RemoveFollowerSerializer
 from .utils import remove_follower_user
+from category.models import Category
 
 
 class UserView(APIView):
@@ -44,6 +45,10 @@ class UserView(APIView):
                 "phone": profile.phone,
                 "country": profile.country,
                 "province": profile.province,
+                "category" : {
+                    'id' : profile.category.id,
+                    'title' : profile.category.name
+                },
                 "address": profile.address,
             }
         )
@@ -67,6 +72,7 @@ class UserView(APIView):
             profile.province = self.request.data["province"]
             profile.address = self.request.data["address"]
             profile.avatar = self.request.data["avatar"]
+            profile.category = get_object_or_404(Category, id=self.request.data["event_id"])
             with transaction.atomic():
                 user.save()
                 profile.save()
