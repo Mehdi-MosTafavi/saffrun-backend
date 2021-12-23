@@ -1,15 +1,12 @@
-from django.contrib.auth.models import User
-from django.db.models import Q, Count, F
-from django.utils import timezone
-from rest_framework import serializers, status
-from rest_framework.response import Response
-from core.responses import ErrorResponse
 from datetime import timedelta, datetime
-from .utils import check_collision, create_reserve_objects
-from .models import Reservation
-from event.serializers import SpecificEventSerializer
 
 from authentication.serializers import ShortUserSerializer
+from core.responses import ErrorResponse
+from event.serializers import SpecificEventSerializer
+from rest_framework import serializers
+
+from .models import Reservation
+from .utils import check_collision, create_reserve_objects
 
 
 class ReservePeriodSerializer(serializers.Serializer):
@@ -36,9 +33,9 @@ class ReservePeriodSerializer(serializers.Serializer):
             kwargs["date"], validated_data["end_time"]
         )
         if not check_collision(
-            start_datetime,
-            end_datetime,
-            kwargs["owner"],
+                start_datetime,
+                end_datetime,
+                kwargs["owner"],
         ):
             total_duration = end_datetime - start_datetime
             total_duration = total_duration.seconds // 60
@@ -157,6 +154,31 @@ class ReserveSerializer(serializers.ModelSerializer):
         fields = ["id", "owner", "start_time", "end_time"]
 
 
+class ReserveOwnerDetail(serializers.ModelSerializer):
+    participants = serializers.SerializerMethodField()
+    start_time = serializers.SerializerMethodField(method_name="get_start_time")
+    end_time = serializers.SerializerMethodField(method_name="get_end_time")
+
+    class Meta:
+        model = Reservation
+        fields = ["id", "capacity", "start_time", "end_time", 'participants']
+
+    def get_participants(self, obj):
+        particpiants_list = []
+        for participant in obj.participants.all():
+            particpiants_list.append({
+                'name': participant.user.username,
+                'image': participant.avatar
+            })
+        return particpiants_list
+
+    def get_start_time(self, reservation):
+        return reservation.get_start_datetime().time()
+
+    def get_end_time(self, reservation):
+        return reservation.get_end_datetime().time()
+
+
 class DayDetailSerializer(serializers.Serializer):
     reserves = ReserveSerializer(many=True)
     events = SpecificEventSerializer(many=True)
@@ -177,6 +199,9 @@ class NextSevenDaysSerializer(serializers.Serializer):
         child=serializers.ListField(child=ReserveAbstractSerializer())
     )
 
+class CurrentNearestReserveSerializer(serializers.Serializer):
+    current_reserve = ReserveOwnerDetail()
+    nearest_reserves = ReserveOwnerDetail(many=True)
 
 class ReserveEmployeeSerializer(serializers.Serializer):
     reserve_id = serializers.IntegerField()

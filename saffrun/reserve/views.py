@@ -1,8 +1,11 @@
+from core.responses import ErrorResponse, SuccessResponse
 from drf_yasg.utils import swagger_auto_schema
+from event.services import get_all_events_of_specific_day
+from profile.models import EmployeeProfile
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from core.responses import ErrorResponse, SuccessResponse
 
 from .serializers import (
     CreateReservesSerializer,
@@ -13,7 +16,7 @@ from .serializers import (
     DaySerializer,
     GetAdminSerializer,
     NextSevenDaysSerializer,
-    ReserveEmployeeSerializer,
+    ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer,
 )
 from .utils import (
     get_paginated_reservation_result,
@@ -22,9 +25,8 @@ from .utils import (
     get_nearest_free_reserve,
     get_next_n_days_free_reserves,
     reserve_it,
-    get_reserve_abstract_dictionary,
+    get_reserve_abstract_dictionary, get_current_reserve, get_nearest_busy_reserve,
 )
-from event.services import get_all_events_of_specific_day
 
 
 @swagger_auto_schema(
@@ -219,3 +221,24 @@ def reserve_employee(request):
         {"error": ErrorResponse.FULL_CAPACITY},
         status=status.HTTP_411_LENGTH_REQUIRED,
     )
+
+
+@swagger_auto_schema(
+    method="get",
+    responses={
+        status.HTTP_200_OK: ReserveOwnerDetail,
+        status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["GET"])
+def get_nearest_reserve(request):
+    owner = get_object_or_404(EmployeeProfile, user=request.user)
+    current_reserve = get_current_reserve(owner)
+    near_reserve = get_nearest_busy_reserve(owner)
+    day_detail_serializer = CurrentNearestReserveSerializer(
+        instance={
+            "current_reserve": current_reserve,
+            "nearest_reserves": near_reserve
+        }
+    )
+    return Response(day_detail_serializer.data, status=status.HTTP_200_OK)
