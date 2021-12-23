@@ -9,6 +9,7 @@
         "description": "قهوه بزنیم با هم داوشیا",
         "discount": 0,
         "owner": 1,
+        "category" : 1,
         "start_datetime": "2021-11-25T12:24:26Z",
         "end_datetime": "2021-11-25T15:24:29Z",
         "participants": [
@@ -29,6 +30,7 @@
         "description": "کتاب با هم می خوانیم",
         "discount": 0,
         "owner": 2,
+        "category" : 1,
         "start_datetime": "2021-11-25T12:26:59Z",
         "end_datetime": "2021-11-25T12:27:01Z",
         "participants": [
