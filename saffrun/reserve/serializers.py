@@ -158,10 +158,11 @@ class ReserveOwnerDetail(serializers.ModelSerializer):
     participants = serializers.SerializerMethodField()
     start_time = serializers.SerializerMethodField(method_name="get_start_time")
     end_time = serializers.SerializerMethodField(method_name="get_end_time")
+    date = serializers.SerializerMethodField()
 
     class Meta:
         model = Reservation
-        fields = ["id", "capacity", "start_time", "end_time", 'participants']
+        fields = ["id", "capacity", 'date' ,"start_time", "end_time", 'participants']
 
     def get_participants(self, obj):
         particpiants_list = []
@@ -177,6 +178,9 @@ class ReserveOwnerDetail(serializers.ModelSerializer):
 
     def get_end_time(self, reservation):
         return reservation.get_end_datetime().time()
+
+    def get_date(self, reservation):
+        return reservation.get_start_datetime().date()
 
 
 class DayDetailSerializer(serializers.Serializer):
