@@ -199,6 +199,9 @@ class NextSevenDaysSerializer(serializers.Serializer):
         child=serializers.ListField(child=ReserveAbstractSerializer())
     )
 
+class CurrentNearestReserveSerializer(serializers.Serializer):
+    current_reserve = ReserveOwnerDetail()
+    nearest_reserves = ReserveOwnerDetail(many=True)
 
 class ReserveEmployeeSerializer(serializers.Serializer):
     reserve_id = serializers.IntegerField()

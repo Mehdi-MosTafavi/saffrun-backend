@@ -16,7 +16,7 @@ from .serializers import (
     DaySerializer,
     GetAdminSerializer,
     NextSevenDaysSerializer,
-    ReserveEmployeeSerializer, ReserveSerializer, ReserveOwnerDetail,
+    ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer,
 )
 from .utils import (
     get_paginated_reservation_result,
@@ -25,7 +25,7 @@ from .utils import (
     get_nearest_free_reserve,
     get_next_n_days_free_reserves,
     reserve_it,
-    get_reserve_abstract_dictionary, get_current_reserve,
+    get_reserve_abstract_dictionary, get_current_reserve, get_nearest_busy_reserve,
 )
 
 
@@ -233,8 +233,12 @@ def reserve_employee(request):
 @api_view(["GET"])
 def get_nearest_reserve(request):
     owner = get_object_or_404(EmployeeProfile, user=request.user)
-    near_reserve = get_current_reserve(owner)
-    day_detail_serializer = ReserveOwnerDetail(
-        instance=near_reserve
+    current_reserve = get_current_reserve(owner)
+    near_reserve = get_nearest_busy_reserve(owner)
+    day_detail_serializer = CurrentNearestReserveSerializer(
+        instance={
+            "current_reserve": current_reserve,
+            "nearest_reserves": near_reserve
+        }
     )
-    return Response(data=day_detail_serializer.data, status=status.HTTP_200_OK)
+    return Response(day_detail_serializer.data, status=status.HTTP_200_OK)

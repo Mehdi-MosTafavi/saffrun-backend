@@ -238,10 +238,19 @@ def get_reserve_abstract_dictionary(reserve):
     )
 
 
-def get_current_reserve(ownerProfile: EmployeeProfile):
+def get_current_reserve(owner_profile: EmployeeProfile):
     current_time = timezone.datetime.now()
     reserve = Reservation.objects.filter(start_datetime__lte=current_time, end_datetime__gte=current_time,
-                                         owner=ownerProfile).annotate(participant_count=Count("participants"))
+                                         owner=owner_profile).annotate(participant_count=Count("participants"))
     if len(reserve) == 0:
         return None
     return reserve[0]
+
+
+def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
+    current_time = timezone.datetime.now()
+    reserve_list = Reservation.objects.filter(start_datetime__gte=current_time, start_datetime__date=current_time.date(),
+                                         owner=owner_profile).annotate(participant_count=Count("participants")).filter(
+        participant_count__gte = 0
+    )
+    return reserve_list if len(reserve_list) <= 5 else reserve_list[:5]
