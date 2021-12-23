@@ -11,21 +11,21 @@ from .serializers import (
     CreateReservesSerializer,
     GetAllReservesSerializer,
     DateSerializer,
-    PastFutureReserveSerializer,
     DayDetailSerializer,
     DaySerializer,
     GetAdminSerializer,
     NextSevenDaysSerializer,
-    ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer,
+    ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer, AbstractReserveSerializer,
+    ReserveFutureSeriallizer,
 )
 from .utils import (
-    get_paginated_reservation_result,
     get_user_busy_dates_list,
     get_all_user_reserves_in_a_day,
     get_nearest_free_reserve,
     get_next_n_days_free_reserves,
     reserve_it,
     get_reserve_abstract_dictionary, get_current_reserve, get_nearest_busy_reserve,
+    get_paginated_past_reservation_result, get_paginated_future_reservation_result,
 )
 
 
@@ -78,34 +78,43 @@ def create_reserves(request):
     method="get",
     query_serializer=GetAllReservesSerializer,
     responses={
-        status.HTTP_200_OK: PastFutureReserveSerializer,
+        status.HTTP_200_OK: AbstractReserveSerializer,
         status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
     },
 )
 @api_view(["GET"])
-def get_all_reserves(request):
+def get_past_reserves(request):
     reserves_serializer = GetAllReservesSerializer(data=request.GET)
     if not reserves_serializer.is_valid():
         return Response(
             exception={"error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    past_result, future_result = get_paginated_reservation_result(
+    past_result = get_paginated_past_reservation_result(
         reserves_serializer, request
     )
-    serializer = PastFutureReserveSerializer(
-        data={"past": past_result, "future": future_result}
-    )
-    if not serializer.is_valid():
+    return Response({"reserves": past_result}, status=200)
+
+@swagger_auto_schema(
+    method="get",
+    query_serializer=GetAllReservesSerializer,
+    responses={
+        status.HTTP_200_OK: ReserveFutureSeriallizer,
+        status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["GET"])
+def get_future_reserves(request):
+    reserves_serializer = GetAllReservesSerializer(data=request.GET)
+    if not reserves_serializer.is_valid():
         return Response(
             exception={"error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    return Response(
-        data=serializer.data,
-        status=status.HTTP_200_OK,
+    future_result = get_paginated_future_reservation_result(
+        reserves_serializer, request
     )
-
+    return Response({"reserves": future_result}, status=200)
 
 @swagger_auto_schema(
     method="get",

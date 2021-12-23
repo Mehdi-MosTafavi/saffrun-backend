@@ -115,17 +115,13 @@ class GetAllReservesSerializer(serializers.Serializer):
     page_count = serializers.IntegerField()
 
 
-class PastFutureReserveSerializer(serializers.Serializer):
-    class AbstractReserveSerializer(serializers.Serializer):
-        date = serializers.DateField()
-        fill = serializers.IntegerField()
-        available = serializers.IntegerField()
+class AbstractReserveSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    fill = serializers.IntegerField()
+    available = serializers.IntegerField()
 
-    class ReserveFutureSeriallizer(AbstractReserveSerializer):
-        next_reserve = serializers.TimeField(allow_null=True)
-
-    past = serializers.ListField(child=AbstractReserveSerializer())
-    future = serializers.ListField(child=ReserveFutureSeriallizer())
+class ReserveFutureSeriallizer(AbstractReserveSerializer):
+    next_reserve = serializers.TimeField(allow_null=True)
 
 
 class DateSerializer(serializers.Serializer):

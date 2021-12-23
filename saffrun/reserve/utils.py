@@ -101,21 +101,25 @@ def get_future_result(owner):
     )
 
 
-def get_paginated_reservation_result(reserves_serializer, request):
+def get_paginated_past_reservation_result(reserves_serializer, request):
     past_reserves = get_past_result(request.user.employee_profile)
-    future_reserves = get_future_result(request.user.employee_profile)
     paginator = PageNumberPagination()
     paginator.page_size = reserves_serializer.validated_data["page_count"]
     paginator.page = reserves_serializer.validated_data["page"]
     paginated_past = paginator.paginate_queryset(past_reserves, request)
-    paginated_future = paginator.paginate_queryset(future_reserves, request)
-    past_result = get_details_past(
+    return get_details_past(
         paginated_past, owner=request.user.employee_profile
     )
-    future_result = get_details_future(
+
+def get_paginated_future_reservation_result(reserves_serializer, request):
+    future_reserves = get_future_result(request.user.employee_profile)
+    paginator = PageNumberPagination()
+    paginator.page_size = reserves_serializer.validated_data.get("page_count")
+    paginator.page = reserves_serializer.validated_data.get("page")
+    paginated_future = paginator.paginate_queryset(future_reserves, request)
+    return get_details_future(
         paginated_future, owner=request.user.employee_profile
     )
-    return past_result, future_result
 
 
 def get_user_busy_dates_list(user):
