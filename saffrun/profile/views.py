@@ -92,11 +92,6 @@ class FollowEmployee(GenericAPIView):
     def _get_user_profile(self):
         return get_object_or_404(UserProfile, user=self.request.user)
 
-    def get_serializer_class(self):
-        if self.action == 'destroy':
-            return self.serializer_class
-        return self.serializer_class
-
     def get(self, request):
         profile: EmployeeProfile = get_object_or_404(EmployeeProfile, user=self.request.user)
         followers = profile.followers.all()
