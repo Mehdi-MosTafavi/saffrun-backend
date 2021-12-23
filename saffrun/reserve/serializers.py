@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from .models import Reservation
 from .utils import check_collision, create_reserve_objects
+from core.serializers import ImageAvatarSerializer
 
 
 class ReservePeriodSerializer(serializers.Serializer):
@@ -169,7 +170,7 @@ class ReserveOwnerDetail(serializers.ModelSerializer):
         for participant in obj.participants.all():
             particpiants_list.append({
                 'name': participant.user.username,
-                'image': participant.avatar
+                'image': ImageAvatarSerializer(instance=participant.avatar).data
             })
         return particpiants_list
 
