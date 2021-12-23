@@ -4,6 +4,8 @@ from core.models import BaseModel
 from django.contrib.auth.models import User
 from django.db import models
 
+from core.models import Image
+
 
 class ProfileBase(BaseModel):
     phone = models.CharField(max_length=11, null=True, unique=True, blank=True)
@@ -11,7 +13,12 @@ class ProfileBase(BaseModel):
     city = models.CharField(max_length=20, null=True, blank=True)
     province = models.CharField(max_length=20, null=True, blank=True)
     address = models.CharField(max_length=50, null=True, blank=True)
-    avatar = models.URLField(null=True, blank=True)
+    avatar = models.ForeignKey(
+        Image,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         abstract = True

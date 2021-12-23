@@ -10,7 +10,7 @@
         "province": "tehran",
         "city": "tehran",
         "address": null,
-        "avatar": null,
+        "avatar": 1,
         "following": []
     }
 },
@@ -25,7 +25,7 @@
         "country": "south africa",
         "province": "bushehr",
         "address": null,
-        "avatar": null,
+        "avatar": 1,
         "following": []
     }
 },
@@ -58,7 +58,7 @@
         "country": "tabriz",
         "province": "tabriz",
         "address": null,
-        "avatar": null,
+        "avatar": 1,
         "following": [
             1,
             2
@@ -76,7 +76,7 @@
         "country": "israel",
         "province": "israel",
         "address": null,
-        "avatar": null,
+        "avatar": 1,
         "following": [
             2
         ]
@@ -93,7 +93,7 @@
         "country": "karaj",
         "province": "karaj",
         "address": null,
-        "avatar": null,
+        "avatar": 1,
         "following": [
             1
         ]
@@ -111,7 +111,7 @@
         "province": "Texas",
         "address": "khoone johny ina",
         "category" : 1,
-        "avatar": "https://www.pngfind.com/pngs/b/5-52097_avatar-png.png",
+        "avatar": 1,
         "level": 1
     }
 },
@@ -126,7 +126,7 @@
         "country": "I.R.S",
         "province": "semnan",
         "address": null,
-        "avatar": null,
+        "avatar": 1,
         "category" : 1,
         "level": 1
     }

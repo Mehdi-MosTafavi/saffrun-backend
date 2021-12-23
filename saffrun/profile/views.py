@@ -1,6 +1,9 @@
+from category.models import Category
+from core.models import Image
 from core.responses import ErrorResponse
 # Create your views here.
 from core.responses import SuccessResponse
+from core.serializers import ImageAvatarSerializer
 from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
 from profile.models import EmployeeProfile, UserProfile
@@ -13,7 +16,6 @@ from rest_framework.views import APIView
 
 from .serializers import FollowSerializer, RemoveFollowerSerializer
 from .utils import remove_follower_user
-from category.models import Category
 
 
 class UserView(APIView):
@@ -45,11 +47,12 @@ class UserView(APIView):
                 "phone": profile.phone,
                 "country": profile.country,
                 "province": profile.province,
-                "category" : {
-                    'id' : profile.category.id,
-                    'title' : profile.category.name
+                "category": {
+                    'id': profile.category.id,
+                    'title': profile.category.name
                 },
                 "address": profile.address,
+                "avatar": ImageAvatarSerializer(instance=profile.avatar).data
             }
         )
 
@@ -71,8 +74,8 @@ class UserView(APIView):
             profile.country = self.request.data["country"]
             profile.province = self.request.data["province"]
             profile.address = self.request.data["address"]
-            profile.avatar = self.request.data["avatar"]
-            profile.category = get_object_or_404(Category, id=self.request.data["event_id"])
+            profile.avatar = get_object_or_404(Image, self.request.data["image_id"])
+            profile.category = get_object_or_404(Category, id=self.request.data["category_id"])
             with transaction.atomic():
                 user.save()
                 profile.save()
@@ -108,7 +111,7 @@ class FollowEmployee(GenericAPIView):
                 'username': follower.user.username,
                 'email': follower.user.email,
                 'city': follower.city,
-                'avatar': follower.avatar})
+                'avatar': ImageSerializer(instance=follower.avatar)})
         return Response(follwers_list)
 
     def post(self, request):
