@@ -1,8 +1,8 @@
+# Create your models here.
+from category.models import Category
+from core.models import BaseModel
 from django.contrib.auth.models import User
 from django.db import models
-
-# Create your models here.
-from core.models import BaseModel
 
 
 class ProfileBase(BaseModel):
@@ -40,6 +40,7 @@ class EmployeeProfile(ProfileBase):
     level = models.IntegerField(
         choices=LevelChoice.choices, default=LevelChoice.NORMAL
     )
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_employee')
 
     def __str__(self):
         return self.user.username

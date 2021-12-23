@@ -1,9 +1,8 @@
-from django.contrib.auth.models import User
+# Create your models here.
+from category.models import Category
+from core.models import BaseModel
 from django.db import models
 from profile.models import UserProfile, EmployeeProfile
-
-# Create your models here.
-from core.models import Comment, BaseModel, Image
 
 
 class Event(BaseModel):
@@ -21,5 +20,6 @@ class Event(BaseModel):
     owner = models.ForeignKey(
         EmployeeProfile, on_delete=models.CASCADE, related_name="owned_event"
     )
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_event')
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()

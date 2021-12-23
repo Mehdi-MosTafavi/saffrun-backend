@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     "notification",
     "reserve",
     "corsheaders",
-    'comment'
+    'comment',
+    'category'
 ]
 
 MIDDLEWARE = [

@@ -110,6 +110,7 @@
         "country": "USA",
         "province": "Texas",
         "address": "khoone johny ina",
+        "category" : 1,
         "avatar": "https://www.pngfind.com/pngs/b/5-52097_avatar-png.png",
         "level": 1
     }
@@ -126,6 +127,7 @@
         "province": "semnan",
         "address": null,
         "avatar": null,
+        "category" : 1,
         "level": 1
     }
 }]

@@ -13,12 +13,14 @@ from .models import Event
 
 
 class EventSerializer(FlexFieldsModelSerializer):
+    category_id = serializers.IntegerField()
     class Meta:
         model = Event
         fields = [
             'title',
             "description",
             "discount",
+            "category_id",
             "start_datetime",
             "end_datetime",
         ]
@@ -28,6 +30,7 @@ class EventSerializer(FlexFieldsModelSerializer):
 class EventImageSerializer(FlexFieldsModelSerializer):
     images = ImageSerializer(many=True)
     participants = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -39,8 +42,15 @@ class EventImageSerializer(FlexFieldsModelSerializer):
             'participants',
             "start_datetime",
             "end_datetime",
+            "category",
             "images",
         ]
+    def get_category(self,obj):
+        return {
+            'id' : obj.category.id,
+            'title' : obj.category.name
+        };
+
 
     def get_participants(self, obj):
         return obj.participants.all().count()
