@@ -91,8 +91,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "saffrun-database",
-        "USER": "saffrun-user",
-        "PASSWORD": "12345678",
+        "USER": "postgres",
+        "PASSWORD": 12345678,
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": 5432,
     }
