@@ -1,12 +1,12 @@
+from datetime import timedelta
+
 from django.db.models import Q, Count, F
 from django.utils import timezone
-from datetime import timedelta
+from event.models import Event
+from profile.models import EmployeeProfile
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Reservation
-from event.models import Event
-
-from profile.models import EmployeeProfile
 
 
 def check_collision(wanted_start, wanted_end, owner):
@@ -34,9 +34,9 @@ def get_a_day_data(date, owner):
     ).count()
     fill = (
         Reservation.objects.filter(owner=owner, start_datetime__date=date)
-        .annotate(participant_count=Count("participants"))
-        .filter(participant_count=F("capacity"))
-        .count()
+            .annotate(participant_count=Count("participants"))
+            .filter(participant_count=F("capacity"))
+            .count()
     )
     available = all - fill
     return {"date": date, "fill": fill, "available": available}
@@ -51,9 +51,9 @@ def get_a_day_data_for_future(date, owner):
             start_datetime__gte=timezone.now(),
             start_datetime__date=date,
         )
-        .annotate(participant_count=Count("participants"))
-        .filter(~is_full_query)
-        .order_by("start_datetime")
+            .annotate(participant_count=Count("participants"))
+            .filter(~is_full_query)
+            .order_by("start_datetime")
     )
     if reserve_list.count():
         time = reserve_list[0].get_start_datetime().time()
@@ -82,10 +82,10 @@ def get_past_result(owner):
         Reservation.objects.filter(
             end_datetime__lte=timezone.datetime.now(), owner=owner
         )
-        .values("start_datetime__date")
-        .distinct()
-        .order_by("-start_datetime__date")
-        .values_list("start_datetime__date", flat=True)
+            .values("start_datetime__date")
+            .distinct()
+            .order_by("-start_datetime__date")
+            .values_list("start_datetime__date", flat=True)
     )
 
 
@@ -94,10 +94,10 @@ def get_future_result(owner):
         Reservation.objects.filter(
             end_datetime__gt=timezone.datetime.now(), owner=owner
         )
-        .values("start_datetime__date")
-        .distinct()
-        .order_by("start_datetime__date")
-        .values_list("start_datetime__date", flat=True)
+            .values("start_datetime__date")
+            .distinct()
+            .order_by("start_datetime__date")
+            .values_list("start_datetime__date", flat=True)
     )
 
 
@@ -121,13 +121,13 @@ def get_paginated_reservation_result(reserves_serializer, request):
 def get_user_busy_dates_list(user):
     reservation_dates = (
         Reservation.objects.filter(participants=user)
-        .values_list("start_datetime__date", flat=True)
-        .distinct()
+            .values_list("start_datetime__date", flat=True)
+            .distinct()
     )
     event_dates_tuples = (
         Event.objects.filter(participants=user)
-        .values_list("start_datetime__date", "end_datetime__date")
-        .distinct()
+            .values_list("start_datetime__date", "end_datetime__date")
+            .distinct()
     )
     event_dates = set()
     for event in event_dates_tuples:
@@ -161,7 +161,7 @@ def get_reserve_count_and_duration(validated_data, total_duration):
 
 
 def create_reserve_objects(
-    validated_data, total_duration, start_datetime, **kwargs
+        validated_data, total_duration, start_datetime, **kwargs
 ):
     time = start_datetime
     count, duration = get_reserve_count_and_duration(
@@ -186,9 +186,9 @@ def get_nearest_free_reserve(admin_id):
             Reservation.objects.filter(
                 owner=admin, start_datetime__gte=timezone.datetime.now()
             )
-            .annotate(participant_count=Count("participants"))
-            .filter(participant_count__lt=F("capacity"))
-            .order_by("start_datetime")
+                .annotate(participant_count=Count("participants"))
+                .filter(participant_count__lt=F("capacity"))
+                .order_by("start_datetime")
         )
         if reserves.count() == 0:
             return None
@@ -206,9 +206,9 @@ def get_next_n_days_free_reserves(admin_id, days):
             start_datetime__gte=timezone.datetime.now(),
             start_datetime__date__lt=today_date + timedelta(days=days),
         )
-        .annotate(participant_count=Count("participants"))
-        .filter(participant_count__lt=F("capacity"))
-        .order_by("start_datetime")
+            .annotate(participant_count=Count("participants"))
+            .filter(participant_count__lt=F("capacity"))
+            .order_by("start_datetime")
     )
     reserves_list = [[] for i in range(days)]
     for reserve in reserves.all():
@@ -236,3 +236,12 @@ def get_reserve_abstract_dictionary(reserve):
         if reserve
         else ""
     )
+
+
+def get_current_reserve(ownerProfile: EmployeeProfile):
+    current_time = timezone.datetime.now()
+    reserve = Reservation.objects.filter(start_datetime__lte=current_time, end_datetime__gte=current_time,
+                                         owner=ownerProfile).annotate(participant_count=Count("participants"))
+    if len(reserve) == 0:
+        return None
+    return reserve[0]
