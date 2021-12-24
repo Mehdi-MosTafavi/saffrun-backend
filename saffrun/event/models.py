@@ -2,6 +2,7 @@
 from category.models import Category
 from core.models import BaseModel
 from django.db import models
+from django.utils import timezone
 from profile.models import UserProfile, EmployeeProfile
 
 
@@ -24,3 +25,13 @@ class Event(BaseModel):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
     price = models.IntegerField(null=False, default=0)
+
+    def get_start_datetime(self):
+        return self.start_datetime.replace(tzinfo=timezone.utc).astimezone(
+            tz=None
+        )
+
+    def get_end_datetime(self):
+        return self.end_datetime.replace(tzinfo=timezone.utc).astimezone(
+            tz=None
+        )
