@@ -3,11 +3,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics
 from authentication.serializers import (
     RegisterSerializer,
-    ChangePasswordSerializer,
 )
 from rest_framework.response import Response
 from core.responses import ErrorResponse
 from profile.models import EmployeeProfile, UserProfile
+
+from .tasks import send_email
 
 
 class RegisterUser(generics.CreateAPIView):
@@ -49,13 +50,9 @@ class RegisterUser(generics.CreateAPIView):
         return
 
 
-class ChangePassword(generics.UpdateAPIView):
+class ChangePassword(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = ChangePasswordSerializer
 
-    def get_object(self):
-        return self.request.user
-
-    def finalize_response(self, request, response, *args, **kwargs):
-        response.data = {"status": "Done"}
-        return super().finalize_response(request, response, *args, **kwargs)
+    def post(self, request):
+        send_email.apply_async(args=[self.request.user.id])
+        return Response()

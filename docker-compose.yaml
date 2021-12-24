@@ -11,15 +11,22 @@ services:
       - POSTGRES_PASSWORD=12345678
     ports:
       - "15432:5432"
+  redis:
+    image: m.docker-registry.ir/redis:latest
+    command: redis-server
+    ports:
+      - "16379:6379"
   web:
     build: .
     tty: true
     environment:
       - DB_HOST=db
-    command: /bin/bash -c "cd saffrun && python manage.py migrate && python manage.py loaddata users profiles && python manage.py runserver 0.0.0.0:8000"
+    command: /bin/bash -c "cd saffrun && python manage.py migrate && python manage.py loaddata users profiles && celery -A saffrun worker --loglevel=INFO -D && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/code
     ports:
       - "8000:8000"
+      - "5555:5555"
     depends_on:
       - db
+      - redis
