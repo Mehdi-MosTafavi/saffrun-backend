@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from versatileimagefield.fields import VersatileImageField, PPOIField
 from django.db import models
 
@@ -9,14 +8,6 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
-
-
-class Comment(BaseModel):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="comments"
-    )
-    text = models.TextField()
-
 
 class Image(BaseModel):
     def get_file_path(self, filename):

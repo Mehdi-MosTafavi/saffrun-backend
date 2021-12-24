@@ -1,5 +1,6 @@
 from core.models import Image
 from rest_flex_fields import FlexFieldsModelSerializer
+from rest_framework import serializers
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 
 
@@ -34,3 +35,23 @@ class ImageAvatarSerializer(FlexFieldsModelSerializer):
         ref_name = "image_serializer"
         model = Image
         fields = ["image"]
+
+
+class HomepageResponse(serializers.Serializer):
+    first_name = serializers.CharField(allow_blank=True)
+    last_name = serializers.CharField(allow_blank=True)
+    followers = serializers.IntegerField(min_value=0)
+    number_of_events = serializers.IntegerField(min_value=0)
+    number_of_active_events = serializers.IntegerField(min_value=0)
+    number_of_comments = serializers.IntegerField(min_value=0)
+    last_comments = serializers.ListField(min_length=0, max_length=3, child=serializers.DictField())
+    number_of_all_reserves = serializers.IntegerField(min_value=0)
+    number_of_given_reserves = serializers.IntegerField(min_value=0)
+    monthly_reserves = serializers.ListField(min_length=0, max_length=12, child=serializers.DictField())
+    monthly_events = serializers.ListField(min_length=0, max_length=12, child=serializers.DictField())
+    last_given_reserves = serializers.ListField(min_length=0, max_length=5, child=serializers.DictField())
+    last_events = serializers.ListField(min_length=0, max_length=5, allow_empty=True, child=serializers.DictField())
+
+
+
+
