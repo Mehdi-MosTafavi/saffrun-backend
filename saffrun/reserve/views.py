@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import (
     CreateReservesSerializer,
@@ -16,7 +17,7 @@ from .serializers import (
     GetAdminSerializer,
     NextSevenDaysSerializer,
     ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer, AbstractReserveSerializer,
-    ReserveFutureSeriallizer,
+    ReserveFutureSeriallizer, ReserveHistorySerializer,
 )
 from .utils import (
     get_user_busy_dates_list,
@@ -25,8 +26,9 @@ from .utils import (
     get_next_n_days_free_reserves,
     reserve_it,
     get_reserve_abstract_dictionary, get_current_reserve, get_nearest_busy_reserve,
-    get_paginated_past_reservation_result, get_paginated_future_reservation_result,
+    get_paginated_past_reservation_result, get_paginated_future_reservation_result, get_reserve_history_client,
 )
+from core.services import is_user_client
 
 
 @swagger_auto_schema(
@@ -251,3 +253,28 @@ def get_nearest_reserve(request):
         }
     )
     return Response(day_detail_serializer.data, status=status.HTTP_200_OK)
+
+
+class ClientReserveHistory(APIView):
+    @swagger_auto_schema(
+        query_serializer=GetAllReservesSerializer,
+        responses={
+            status.HTTP_200_OK: ReserveHistorySerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+        }
+    )
+    def get(self, request):
+        reserves_serializer = GetAllReservesSerializer(data=request.GET)
+        if not reserves_serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if not is_user_client(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        reserves = get_reserve_history_client(request.user.user_profile)
+        return Response({"reserves": ReserveHistorySerializer(reserves, many=True).data}, status=200)

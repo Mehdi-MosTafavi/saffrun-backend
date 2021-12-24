@@ -3,10 +3,11 @@ from datetime import timedelta
 from django.db.models import Q, Count, F
 from django.utils import timezone
 from event.models import Event
-from profile.models import EmployeeProfile
+from profile.models import EmployeeProfile, UserProfile
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Reservation
+
 
 
 def check_collision(wanted_start, wanted_end, owner):
@@ -186,6 +187,7 @@ def create_reserve_objects(
             end_datetime=end_time,
             capacity=validated_data["capacity"],
             owner=kwargs["owner"],
+            price=kwargs["price"]
         )
         time += timedelta(minutes=duration)
     return count
@@ -268,3 +270,6 @@ def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
         participant_count__gte=0
     )
     return reserve_list if len(reserve_list) <= 5 else reserve_list[:5]
+
+def get_reserve_history_client(client: UserProfile):
+    return Reservation.objects.filter(participants=client)
