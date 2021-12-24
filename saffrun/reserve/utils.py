@@ -44,7 +44,6 @@ def get_a_day_data(date, owner):
 
 def get_a_day_data_for_future(date, owner):
     day_dic = get_a_day_data(date, owner)
-    is_full_query = Q(participant_count=F("capacity"))
     reserve_list = (
         Reservation.objects.filter(
             owner=owner,
@@ -52,7 +51,6 @@ def get_a_day_data_for_future(date, owner):
             start_datetime__date=date,
         )
             .annotate(participant_count=Count("participants"))
-            .filter(~is_full_query)
             .order_by("start_datetime")
     )
     if reserve_list.count():
@@ -62,10 +60,19 @@ def get_a_day_data_for_future(date, owner):
     day_dic.update({"next_reserve": time})
     return day_dic
 
+def is_today_have_future_reserve(owner):
+    return True if Reservation.objects.filter(
+        start_datetime__date=timezone.datetime.now().date(),
+        owner=owner,
+        start_datetime__gte=timezone.datetime.now()
+    ).count() > 0 else False
 
 def get_details_past(dates, **kwargs):
     final_list = []
     for date in dates:
+        if date == timezone.datetime.now().date():
+            if is_today_have_future_reserve(kwargs["owner"]):
+                continue
         final_list.append(get_a_day_data(date, kwargs["owner"]))
     return final_list
 
@@ -92,7 +99,7 @@ def get_past_result(owner):
 def get_future_result(owner):
     return (
         Reservation.objects.filter(
-            end_datetime__gt=timezone.datetime.now(), owner=owner
+            start_datetime__gte=timezone.datetime.now(), owner=owner
         )
             .values("start_datetime__date")
             .distinct()
@@ -110,6 +117,7 @@ def get_paginated_past_reservation_result(reserves_serializer, request):
     return get_details_past(
         paginated_past, owner=request.user.employee_profile
     )
+
 
 def get_paginated_future_reservation_result(reserves_serializer, request):
     future_reserves = get_future_result(request.user.employee_profile)
@@ -253,8 +261,10 @@ def get_current_reserve(owner_profile: EmployeeProfile):
 
 def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
     current_time = timezone.datetime.now()
-    reserve_list = Reservation.objects.filter(start_datetime__gte=current_time, start_datetime__date=current_time.date(),
-                                         owner=owner_profile).annotate(participant_count=Count("participants")).filter(
-        participant_count__gte = 0
+    reserve_list = Reservation.objects.filter(start_datetime__gte=current_time,
+                                              start_datetime__date=current_time.date(),
+                                              owner=owner_profile).annotate(
+        participant_count=Count("participants")).filter(
+        participant_count__gte=0
     )
     return reserve_list if len(reserve_list) <= 5 else reserve_list[:5]

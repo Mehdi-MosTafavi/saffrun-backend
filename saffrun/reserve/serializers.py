@@ -53,7 +53,7 @@ class ReservePeriodSerializer(serializers.Serializer):
 
 class AllReservesOfDaySerializer(serializers.Serializer):
     reserve_periods = serializers.ListField(
-        allow_empty=False, child=ReservePeriodSerializer()
+        allow_empty=True, child=ReservePeriodSerializer(), allow_null=True
     )
 
     def create(self, validated_data, **kwargs):
