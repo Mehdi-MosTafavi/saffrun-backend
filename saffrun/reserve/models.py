@@ -17,6 +17,7 @@ class Reservation(BaseModel):
     participants = models.ManyToManyField(
         UserProfile, related_name="participated_reserves", blank=True
     )
+    price = models.IntegerField(default=0, null=False)
 
     def get_start_datetime(self):
         return self.start_datetime.replace(tzinfo=timezone.utc).astimezone(

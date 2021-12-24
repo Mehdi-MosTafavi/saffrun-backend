@@ -1,7 +1,8 @@
-from datetime import timedelta, datetime
-
 from authentication.serializers import ShortUserSerializer
 from core.responses import ErrorResponse
+from datetime import datetime, timedelta
+
+from django.utils import timezone
 from event.serializers import SpecificEventSerializer
 from rest_framework import serializers
 
@@ -46,6 +47,7 @@ class ReservePeriodSerializer(serializers.Serializer):
                 total_duration,
                 start_datetime,
                 owner=kwargs["owner"],
+                price=kwargs["price"]
             )
         else:
             return ErrorResponse.COLLISION_CODE
@@ -53,7 +55,7 @@ class ReservePeriodSerializer(serializers.Serializer):
 
 class AllReservesOfDaySerializer(serializers.Serializer):
     reserve_periods = serializers.ListField(
-        allow_empty=False, child=ReservePeriodSerializer()
+        allow_empty=True, child=ReservePeriodSerializer(), allow_null=True
     )
 
     def create(self, validated_data, **kwargs):
@@ -68,7 +70,8 @@ class AllReservesOfDaySerializer(serializers.Serializer):
                 response = period_serializer.create(
                     period_serializer.validated_data,
                     owner=kwargs["owner"],
-                    date=date,
+                    price = kwargs["price"],
+                    date=date
                 )
                 if response == ErrorResponse.COLLISION_CODE:
                     period_collision_count += 1
@@ -81,6 +84,7 @@ class AllReservesOfDaySerializer(serializers.Serializer):
 class CreateReservesSerializer(serializers.Serializer):
     start_date = serializers.DateField()
     end_date = serializers.DateField()
+    price = serializers.IntegerField()
     days_list = serializers.ListField(
         allow_empty=False, required=True, child=AllReservesOfDaySerializer()
     )
@@ -104,6 +108,7 @@ class CreateReservesSerializer(serializers.Serializer):
                 owner=kwargs["owner"],
                 day_date=validated_data["start_date"] + timedelta(days=index),
                 end_date=validated_data["end_date"],
+                price=validated_data["price"]
             )
             successful_reserve_count += new_reserve_count
             period_collision_count += new_collision_count
@@ -115,17 +120,13 @@ class GetAllReservesSerializer(serializers.Serializer):
     page_count = serializers.IntegerField()
 
 
-class PastFutureReserveSerializer(serializers.Serializer):
-    class AbstractReserveSerializer(serializers.Serializer):
-        date = serializers.DateField()
-        fill = serializers.IntegerField()
-        available = serializers.IntegerField()
+class AbstractReserveSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    fill = serializers.IntegerField()
+    available = serializers.IntegerField()
 
-    class ReserveFutureSeriallizer(AbstractReserveSerializer):
-        next_reserve = serializers.TimeField(allow_null=True)
-
-    past = serializers.ListField(child=AbstractReserveSerializer())
-    future = serializers.ListField(child=ReserveFutureSeriallizer())
+class ReserveFutureSeriallizer(AbstractReserveSerializer):
+    next_reserve = serializers.TimeField(allow_null=True)
 
 
 class DateSerializer(serializers.Serializer):
@@ -152,7 +153,7 @@ class ReserveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ["id", "owner", "start_time", "end_time"]
+        fields = ["id", "owner", "start_time", "end_time", "price"]
 
 
 class ReserveOwnerDetail(serializers.ModelSerializer):
@@ -163,7 +164,7 @@ class ReserveOwnerDetail(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ["id", "capacity", 'date' ,"start_time", "end_time", 'participants']
+        fields = ["id", "capacity", 'date' ,"start_time", "end_time", 'participants', "price"]
 
     def get_participants(self, obj):
         particpiants_list = []
@@ -210,3 +211,19 @@ class CurrentNearestReserveSerializer(serializers.Serializer):
 
 class ReserveEmployeeSerializer(serializers.Serializer):
     reserve_id = serializers.IntegerField()
+
+class ReserveHistorySerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField("get_status")
+
+    @staticmethod
+    def get_status(reserve):
+        if reserve.get_start_datetime() > timezone.now():
+            return "NOT STARTED"
+        if reserve.get_start_datetime() <= timezone.now() <= reserve.get_end_datetime():
+            return "RUNNING"
+        if reserve.get_end_datetime() < timezone.now():
+            return "FINISHED"
+
+    class Meta:
+        model = Reservation
+        fields = ["id", "owner", "start_datetime", "end_datetime", "price", "status"]

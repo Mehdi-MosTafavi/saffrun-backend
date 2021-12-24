@@ -3,10 +3,11 @@ from datetime import timedelta
 from django.db.models import Q, Count, F
 from django.utils import timezone
 from event.models import Event
-from profile.models import EmployeeProfile
+from profile.models import EmployeeProfile, UserProfile
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Reservation
+
 
 
 def check_collision(wanted_start, wanted_end, owner):
@@ -44,7 +45,6 @@ def get_a_day_data(date, owner):
 
 def get_a_day_data_for_future(date, owner):
     day_dic = get_a_day_data(date, owner)
-    is_full_query = Q(participant_count=F("capacity"))
     reserve_list = (
         Reservation.objects.filter(
             owner=owner,
@@ -52,7 +52,6 @@ def get_a_day_data_for_future(date, owner):
             start_datetime__date=date,
         )
             .annotate(participant_count=Count("participants"))
-            .filter(~is_full_query)
             .order_by("start_datetime")
     )
     if reserve_list.count():
@@ -62,10 +61,19 @@ def get_a_day_data_for_future(date, owner):
     day_dic.update({"next_reserve": time})
     return day_dic
 
+def is_today_have_future_reserve(owner):
+    return True if Reservation.objects.filter(
+        start_datetime__date=timezone.datetime.now().date(),
+        owner=owner,
+        start_datetime__gte=timezone.datetime.now()
+    ).count() > 0 else False
 
 def get_details_past(dates, **kwargs):
     final_list = []
     for date in dates:
+        if date == timezone.datetime.now().date():
+            if is_today_have_future_reserve(kwargs["owner"]):
+                continue
         final_list.append(get_a_day_data(date, kwargs["owner"]))
     return final_list
 
@@ -92,7 +100,7 @@ def get_past_result(owner):
 def get_future_result(owner):
     return (
         Reservation.objects.filter(
-            end_datetime__gt=timezone.datetime.now(), owner=owner
+            start_datetime__gte=timezone.datetime.now(), owner=owner
         )
             .values("start_datetime__date")
             .distinct()
@@ -101,21 +109,26 @@ def get_future_result(owner):
     )
 
 
-def get_paginated_reservation_result(reserves_serializer, request):
+def get_paginated_past_reservation_result(reserves_serializer, request):
     past_reserves = get_past_result(request.user.employee_profile)
-    future_reserves = get_future_result(request.user.employee_profile)
     paginator = PageNumberPagination()
     paginator.page_size = reserves_serializer.validated_data["page_count"]
     paginator.page = reserves_serializer.validated_data["page"]
     paginated_past = paginator.paginate_queryset(past_reserves, request)
-    paginated_future = paginator.paginate_queryset(future_reserves, request)
-    past_result = get_details_past(
+    return get_details_past(
         paginated_past, owner=request.user.employee_profile
     )
-    future_result = get_details_future(
+
+
+def get_paginated_future_reservation_result(reserves_serializer, request):
+    future_reserves = get_future_result(request.user.employee_profile)
+    paginator = PageNumberPagination()
+    paginator.page_size = reserves_serializer.validated_data.get("page_count")
+    paginator.page = reserves_serializer.validated_data.get("page")
+    paginated_future = paginator.paginate_queryset(future_reserves, request)
+    return get_details_future(
         paginated_future, owner=request.user.employee_profile
     )
-    return past_result, future_result
 
 
 def get_user_busy_dates_list(user):
@@ -174,6 +187,7 @@ def create_reserve_objects(
             end_datetime=end_time,
             capacity=validated_data["capacity"],
             owner=kwargs["owner"],
+            price=kwargs["price"]
         )
         time += timedelta(minutes=duration)
     return count
@@ -249,8 +263,13 @@ def get_current_reserve(owner_profile: EmployeeProfile):
 
 def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
     current_time = timezone.datetime.now()
-    reserve_list = Reservation.objects.filter(start_datetime__gte=current_time, start_datetime__date=current_time.date(),
-                                         owner=owner_profile).annotate(participant_count=Count("participants")).filter(
-        participant_count__gte = 0
+    reserve_list = Reservation.objects.filter(start_datetime__gte=current_time,
+                                              start_datetime__date=current_time.date(),
+                                              owner=owner_profile).annotate(
+        participant_count=Count("participants")).filter(
+        participant_count__gte=0
     )
     return reserve_list if len(reserve_list) <= 5 else reserve_list[:5]
+
+def get_reserve_history_client(client: UserProfile):
+    return Reservation.objects.filter(participants=client)
