@@ -1,6 +1,8 @@
+from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
 
 from .models import Comment
+from core.serializers import ImageAvatarSerializer
 
 
 class ReplyRelatedField(serializers.RelatedField):
@@ -19,26 +21,33 @@ class ReplyRelatedField(serializers.RelatedField):
             return {
                 'id': value.id,
                 'content': value.content,
-                'time': value.updated_at
+                'time': value.updated_at,
+                "owner": value.event.owner.user.username if value.owner is None else value.owner.user.username,
+                "image": ImageAvatarSerializer(instance=value.event.owner.avatar if value.owner is None else value.owner.avatar).data
             }
         raise Exception('Unexpected type of tagged object')
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentSerializer(FlexFieldsModelSerializer):
     reply = ReplyRelatedField(queryset=Comment.objects.all())
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = ["id",
                   "content",
+                  'user',
                   'reply',
                   "created_at",
                   ]
 
+    def get_user(self, obj: Comment):
+        return {"name": obj.user.user.last_name, "image": ImageAvatarSerializer(instance=obj.user.avatar).data}
+
 
 class CommentPostSerializer(serializers.Serializer):
-    owner_id = serializers.IntegerField(allow_null=True,required=False)
-    event_id = serializers.IntegerField(allow_null=True,required=False)
+    owner_id = serializers.IntegerField(allow_null=True, required=False)
+    event_id = serializers.IntegerField(allow_null=True, required=False)
     content = serializers.CharField()
 
 

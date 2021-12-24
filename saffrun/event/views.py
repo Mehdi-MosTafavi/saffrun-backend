@@ -1,9 +1,10 @@
 from core.responses import ErrorResponse, SuccessResponse
+from core.services import is_user_employee
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -14,15 +15,19 @@ from .serializers import (
     ManyEventSerializer,
     AddParticipantSerializer,
     AddImageSerializer,
-    EventImageSerializer,
+    EventImageSerializer, EventDetailImageSerializer,
 )
 from .utils import get_sorted_events, create_an_event
-from core.services import is_user_employee
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
     serializer_class = EventImageSerializer
+
+
+class RetrieveEventAPIView(RetrieveAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventDetailImageSerializer
 
 
 @swagger_auto_schema(
@@ -45,14 +50,14 @@ def create_event(request):
         event_serializer.validated_data, request.user.employee_profile
     )
     return Response(
-        {"event_id": event.id , "success": SuccessResponse.CREATED}, status=status.HTTP_201_CREATED
+        {"event_id": event.id, "success": SuccessResponse.CREATED}, status=status.HTTP_201_CREATED
     )
 
 
 @swagger_auto_schema(
     method="get",
     query_serializer=AllEventSerializer,
-    responses={200: ManyEventSerializer, 406: ErrorResponse.INVALID_DATA, 400:ErrorResponse.USER_EMPLOYEE},
+    responses={200: ManyEventSerializer, 406: ErrorResponse.INVALID_DATA, 400: ErrorResponse.USER_EMPLOYEE},
 )
 @api_view(["GET"])
 def get_all_events(request):
@@ -86,7 +91,6 @@ def get_all_events(request):
         )
 
 
-
 @swagger_auto_schema(
     method="post",
     request_body=AddParticipantSerializer,
@@ -104,7 +108,7 @@ def add_participants_to_event(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    return add_serializer.add_participants()
+    return add_serializer.add_participants(request)
 
 
 @swagger_auto_schema(

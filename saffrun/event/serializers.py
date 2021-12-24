@@ -1,4 +1,5 @@
 from authentication.serializers import ShortUserSerializer
+from comment.models import Comment
 from core.models import Image
 from core.responses import ErrorResponse
 from core.serializers import ImageSerializer
@@ -7,6 +8,7 @@ from django.db import models
 from profile.models import UserProfile
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .models import Event
@@ -14,6 +16,7 @@ from .models import Event
 
 class EventSerializer(FlexFieldsModelSerializer):
     category_id = serializers.IntegerField()
+
     class Meta:
         model = Event
         fields = [
@@ -26,11 +29,11 @@ class EventSerializer(FlexFieldsModelSerializer):
         ]
 
 
-
 class EventImageSerializer(FlexFieldsModelSerializer):
     images = ImageSerializer(many=True)
     participants = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -39,18 +42,84 @@ class EventImageSerializer(FlexFieldsModelSerializer):
             "title",
             "description",
             "discount",
+            "owner",
             'participants',
             "start_datetime",
             "end_datetime",
             "category",
             "images",
         ]
-    def get_category(self,obj):
-        return {
-            'id' : obj.category.id,
-            'title' : obj.category.name
-        };
 
+    def get_category(self, obj):
+        return {
+            'id': obj.category.id,
+            'title': obj.category.name
+        }
+
+    def get_owner(self, obj):
+        return {
+            'id': obj.owner.id,
+            'title': obj.owner.user.username
+        }
+
+    def get_participants(self, obj):
+        return obj.participants.all().count()
+
+
+class EventDetailImageSerializer(FlexFieldsModelSerializer):
+    images = ImageSerializer(many=True)
+    participants = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+    is_participate = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = [
+            'id',
+            "title",
+            "description",
+            "discount",
+            "owner",
+            'participants',
+            "start_datetime",
+            "end_datetime",
+            "category",
+            "images",
+            'comments',
+            "is_participate"
+        ]
+
+    def get_category(self, obj):
+        return {
+            'id': obj.category.id,
+            'title': obj.category.name
+        }
+
+    def get_is_participate(self, obj):
+        user = get_object_or_404(UserProfile, user=self.context['request'].user)
+
+        return user in obj.participants.all()
+
+    def get_owner(self, obj):
+        return {
+            'id': obj.owner.id,
+            'title': obj.owner.user.username
+        }
+
+    def get_comments(self, obj):
+        comments = Comment.objects.filter(event__isnull=False, is_parent=True).filter(event__id=obj.id).order_by(
+            '-updated_at')
+        list_comment = []
+        for comment in comments[:3]:
+            list_comment.append({
+                "id": comment.id,
+                "name": comment.user.user.last_name,
+                "date": comment.created_at,
+                "text": comment.content
+            })
+        return list_comment
 
     def get_participants(self, obj):
         return obj.participants.all().count()
@@ -84,15 +153,9 @@ class AllEventSerializer(serializers.Serializer):
 
 class AddParticipantSerializer(serializers.Serializer):
     event_id = serializers.IntegerField(required=True)
-    participants_id = serializers.ListField(
-        required=True,
-        allow_empty=False,
-        child=serializers.IntegerField(min_value=1),
-    )
 
-    def add_participants(self):
+    def add_participants(self, request):
         event_id = self.data.get("event_id")
-        initial_participant_id = self.data.get("participants_id")
         try:
             event = Event.objects.get(id=event_id)
         except ObjectDoesNotExist:
@@ -100,20 +163,11 @@ class AddParticipantSerializer(serializers.Serializer):
                 {"Error": ErrorResponse.NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        verified_participant_ids = []
-        for participant_id in initial_participant_id:
-            try:
-                participant = UserProfile.objects.get(user__id=participant_id)
-            except ObjectDoesNotExist:
-                return Response(
-                    {"Error": ErrorResponse.NOT_FOUND},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-            verified_participant_ids.append(participant.id)
-        event.participants.add(*verified_participant_ids)
+        partcipant = get_object_or_404(UserProfile, user=request.user)
+        event.participants.add(partcipant.id)
         event.save()
-        event_serializer = EventSerializer(instance=event)
-        return Response(event_serializer.data, status=status.HTTP_200_OK)
+
+        return Response({"status": "participant added"}, status=status.HTTP_200_OK)
 
 
 class AddImageSerializer(serializers.Serializer):

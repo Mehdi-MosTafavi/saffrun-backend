@@ -47,10 +47,11 @@ class UserView(APIView):
                 "phone": profile.phone,
                 "country": profile.country,
                 "province": profile.province,
+                "gender": profile.gender,
                 "category": {
                     'id': profile.category.id,
                     'title': profile.category.name
-                },
+                } if isinstance(profile, EmployeeProfile) else {},
                 "address": profile.address,
                 "avatar": ImageAvatarSerializer(instance=profile.avatar).data
             }
@@ -74,8 +75,11 @@ class UserView(APIView):
             profile.country = self.request.data["country"]
             profile.province = self.request.data["province"]
             profile.address = self.request.data["address"]
-            profile.avatar = get_object_or_404(Image, self.request.data["image_id"])
-            profile.category = get_object_or_404(Category, id=self.request.data["category_id"])
+            profile.gender = self.request.data["gender"]
+            if "image_id" in self.request.data:
+                profile.avatar = get_object_or_404(Image, self.request.data["image_id"])
+            if isinstance(profile, EmployeeProfile):
+                profile.category = get_object_or_404(Category, id=self.request.data["category_id"])
             with transaction.atomic():
                 user.save()
                 profile.save()
