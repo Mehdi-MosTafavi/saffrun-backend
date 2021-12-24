@@ -8,9 +8,10 @@ from rest_framework.views import APIView
 
 from core.responses import ErrorResponse
 from core.services import is_user_client, is_user_employee
-from .serializers import AddNotificationTokenSerializer, SendNotificationSerializer, GetNotificationsSerializer, \
+from .serializers import AddNotificationTokenSerializer, SendNotificationSerializer, \
     EmployeeGetNotificationsSerializer, ClientGetNotificationSerializer
 from .utils import add_token_to_user, send_notif, get_all_sent_notification, get_all_received_notification
+from core.serializers import GetAllSerializer
 
 
 class SetUserNotificationToken(APIView):
@@ -79,7 +80,7 @@ class SendNotification(APIView):
 
 class EmployeeGetNotifications(APIView):
     @swagger_auto_schema(
-        query_serializer=GetNotificationsSerializer,
+        query_serializer=GetAllSerializer,
         responses={
             status.HTTP_200_OK: EmployeeGetNotificationsSerializer,
             status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_EMPLOYEE,
@@ -87,7 +88,7 @@ class EmployeeGetNotifications(APIView):
         }
     )
     def get(self, request):
-        serializer = GetNotificationsSerializer(data=request.GET)
+        serializer = GetAllSerializer(data=request.GET)
         if not serializer.is_valid():
             return Response(
                 {"status": "Error", "detail": ErrorResponse.INVALID_DATA},
@@ -108,7 +109,7 @@ class EmployeeGetNotifications(APIView):
 
 class ClientGetNotifications(APIView):
     @swagger_auto_schema(
-        query_serializer=GetNotificationsSerializer,
+        query_serializer=GetAllSerializer,
         responses={
             status.HTTP_200_OK: ClientGetNotificationSerializer,
             status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
@@ -116,7 +117,7 @@ class ClientGetNotifications(APIView):
         }
     )
     def get(self, request):
-        serializer = GetNotificationsSerializer(data=request.GET)
+        serializer = GetAllSerializer(data=request.GET)
         if not serializer.is_valid():
             return Response(
                 {"status": "Error", "detail": ErrorResponse.INVALID_DATA},

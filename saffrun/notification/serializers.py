@@ -30,7 +30,3 @@ class ClientGetNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ["title", "text", "type", "url", "sender", "created_at"]
-
-class GetNotificationsSerializer(serializers.Serializer):
-    page = serializers.IntegerField()
-    page_count = serializers.IntegerField()

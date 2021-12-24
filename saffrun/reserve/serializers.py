@@ -10,6 +10,8 @@ from .models import Reservation
 from .utils import check_collision, create_reserve_objects
 from core.serializers import ImageAvatarSerializer
 
+from profile.serializers import EmployeeProfileSerializer
+
 
 class ReservePeriodSerializer(serializers.Serializer):
     start_time = serializers.TimeField()
@@ -115,11 +117,6 @@ class CreateReservesSerializer(serializers.Serializer):
         return successful_reserve_count, period_collision_count
 
 
-class GetAllReservesSerializer(serializers.Serializer):
-    page = serializers.IntegerField()
-    page_count = serializers.IntegerField()
-
-
 class AbstractReserveSerializer(serializers.Serializer):
     date = serializers.DateField()
     fill = serializers.IntegerField()
@@ -214,6 +211,7 @@ class ReserveEmployeeSerializer(serializers.Serializer):
 
 class ReserveHistorySerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField("get_status")
+    owner = EmployeeProfileSerializer()
 
     @staticmethod
     def get_status(reserve):

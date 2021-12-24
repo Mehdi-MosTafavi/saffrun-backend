@@ -10,7 +10,6 @@ from rest_framework.views import APIView
 
 from .serializers import (
     CreateReservesSerializer,
-    GetAllReservesSerializer,
     DateSerializer,
     DayDetailSerializer,
     DaySerializer,
@@ -19,6 +18,7 @@ from .serializers import (
     ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer, AbstractReserveSerializer,
     ReserveFutureSeriallizer, ReserveHistorySerializer,
 )
+from core.serializers import GetAllSerializer
 from .utils import (
     get_user_busy_dates_list,
     get_all_user_reserves_in_a_day,
@@ -78,7 +78,7 @@ def create_reserves(request):
 
 @swagger_auto_schema(
     method="get",
-    query_serializer=GetAllReservesSerializer,
+    query_serializer=GetAllSerializer,
     responses={
         status.HTTP_200_OK: AbstractReserveSerializer,
         status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
@@ -86,7 +86,7 @@ def create_reserves(request):
 )
 @api_view(["GET"])
 def get_past_reserves(request):
-    reserves_serializer = GetAllReservesSerializer(data=request.GET)
+    reserves_serializer = GetAllSerializer(data=request.GET)
     if not reserves_serializer.is_valid():
         return Response(
             exception={"error": ErrorResponse.INVALID_DATA},
@@ -99,7 +99,7 @@ def get_past_reserves(request):
 
 @swagger_auto_schema(
     method="get",
-    query_serializer=GetAllReservesSerializer,
+    query_serializer=GetAllSerializer,
     responses={
         status.HTTP_200_OK: ReserveFutureSeriallizer,
         status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
@@ -107,7 +107,7 @@ def get_past_reserves(request):
 )
 @api_view(["GET"])
 def get_future_reserves(request):
-    reserves_serializer = GetAllReservesSerializer(data=request.GET)
+    reserves_serializer = GetAllSerializer(data=request.GET)
     if not reserves_serializer.is_valid():
         return Response(
             exception={"error": ErrorResponse.INVALID_DATA},
@@ -257,7 +257,7 @@ def get_nearest_reserve(request):
 
 class ClientReserveHistory(APIView):
     @swagger_auto_schema(
-        query_serializer=GetAllReservesSerializer,
+        query_serializer=GetAllSerializer,
         responses={
             status.HTTP_200_OK: ReserveHistorySerializer,
             status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
@@ -265,7 +265,7 @@ class ClientReserveHistory(APIView):
         }
     )
     def get(self, request):
-        reserves_serializer = GetAllReservesSerializer(data=request.GET)
+        reserves_serializer = GetAllSerializer(data=request.GET)
         if not reserves_serializer.is_valid():
             return Response(
                 exception={"error": ErrorResponse.INVALID_DATA},
