@@ -84,6 +84,7 @@ def create_reserves(request):
 )
 @api_view(["GET"])
 def get_all_reserves(request):
+    debug_task(2, 4)
     reserves_serializer = GetAllReservesSerializer(data=request.GET)
     if not reserves_serializer.is_valid():
         return Response(
