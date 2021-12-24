@@ -1,10 +1,15 @@
 # Create your models here.
 from category.models import Category
 from core.models import BaseModel
+from core.models import Image
 from django.contrib.auth.models import User
 from django.db import models
 
-from core.models import Image
+GENDER_CHOICES = (
+    ('M', 'male'),
+    ('F', 'female'),
+    ('N', 'not specified'),
+)
 
 
 class ProfileBase(BaseModel):
@@ -13,6 +18,8 @@ class ProfileBase(BaseModel):
     city = models.CharField(max_length=20, null=True, blank=True)
     province = models.CharField(max_length=20, null=True, blank=True)
     address = models.CharField(max_length=50, null=True, blank=True)
+    gender = models.CharField(choices=GENDER_CHOICES, max_length=1,default='N')
+
     avatar = models.ForeignKey(
         Image,
         on_delete=models.CASCADE,

@@ -125,7 +125,6 @@ class AbstractReserveSerializer(serializers.Serializer):
 class ReserveFutureSeriallizer(AbstractReserveSerializer):
     next_reserve = serializers.TimeField(allow_null=True)
 
-
 class DateSerializer(serializers.Serializer):
     dates = serializers.ListField(child=serializers.DateField())
 

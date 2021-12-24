@@ -1,5 +1,7 @@
 from django.urls import path
+
 from . import views
+from .views import RetrieveEventAPIView
 
 app_name = "event"
 urlpatterns = [
@@ -8,6 +10,7 @@ urlpatterns = [
         views.EventRetrieveUpdateDestroyAPIView.as_view(),
         name="event",
     ),
+    path("get-detail-event/<int:pk>", RetrieveEventAPIView.as_view(), name="get-detail-event"),
     path("add/", views.create_event, name="add-event"),
     path("get-all/", views.get_all_events, name="get-all-events"),
     path(
