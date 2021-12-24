@@ -5,6 +5,7 @@ from core.responses import ErrorResponse
 from core.serializers import ImageSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import F
 from profile.models import UserProfile
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers, status
@@ -110,16 +111,8 @@ class EventDetailImageSerializer(FlexFieldsModelSerializer):
 
     def get_comments(self, obj):
         comments = Comment.objects.filter(event__isnull=False, is_parent=True).filter(event__id=obj.id).order_by(
-            '-updated_at')
-        list_comment = []
-        for comment in comments[:3]:
-            list_comment.append({
-                "id": comment.id,
-                "name": comment.user.user.last_name,
-                "date": comment.created_at,
-                "text": comment.content
-            })
-        return list_comment
+            '-updated_at').values('id', name=F('user__user__last_name'), date=F('created_at'), text=F('content'))
+        return comments[:3]
 
     def get_participants(self, obj):
         return obj.participants.all().count()
