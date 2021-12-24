@@ -24,11 +24,3 @@ class ShortUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username"]
-
-
-class ChangePasswordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            "password",
-        ]
