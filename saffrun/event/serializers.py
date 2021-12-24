@@ -23,6 +23,7 @@ class EventSerializer(FlexFieldsModelSerializer):
             "category_id",
             "start_datetime",
             "end_datetime",
+            "price"
         ]
 
 
@@ -39,18 +40,19 @@ class EventImageSerializer(FlexFieldsModelSerializer):
             "title",
             "description",
             "discount",
+            "price",
             'participants',
             "start_datetime",
             "end_datetime",
             "category",
             "images",
         ]
+
     def get_category(self,obj):
         return {
             'id' : obj.category.id,
             'title' : obj.category.name
-        };
-
+        }
 
     def get_participants(self, obj):
         return obj.participants.all().count()
@@ -146,4 +148,4 @@ class SpecificEventSerializer(FlexFieldsModelSerializer):
 
     class Meta:
         model = Event
-        fields = ["id", "title", "description", "image", "owner"]
+        fields = ["id", "title", "description", "image", "owner", "price"]

@@ -30,6 +30,7 @@ class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     request_body=EventSerializer,
     responses={
         201: SuccessResponse.CREATED,
+        400: ErrorResponse.USER_EMPLOYEE,
         406: ErrorResponse.INVALID_DATA,
     },
 )
@@ -41,6 +42,13 @@ def create_event(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
+
+    if not is_user_employee(request.user):
+        return Response(
+            {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+            status=400,
+        )
+
     event: Event = create_an_event(
         event_serializer.validated_data, request.user.employee_profile
     )
