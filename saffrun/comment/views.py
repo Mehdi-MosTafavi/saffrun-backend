@@ -94,3 +94,24 @@ def get_all_owner_comments(request):
         {"comments": CommentSerializer(instance=comments, many=True).data},
         status=status.HTTP_200_OK,
     )
+
+@swagger_auto_schema(
+    method="post",
+    request_body=CommentSerializer,
+    responses={
+        201: SuccessResponse.CREATED,
+        406: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["POST"])
+def delete(self, request):
+    comment = self.get_comment()
+    employee = self.get_employee_profile()
+    if employee in profile.following.all():
+        profile.following.remove(employee)
+        profile.save()
+        return Response({"status": "Done"})
+    return Response(
+        {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
+        status=400,
+    )
