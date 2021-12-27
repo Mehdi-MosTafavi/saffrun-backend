@@ -7,6 +7,7 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Event
 from .serializers import (
@@ -16,8 +17,12 @@ from .serializers import (
     AddParticipantSerializer,
     AddImageSerializer,
     EventImageSerializer, EventDetailImageSerializer,
+    EventHistorySerializer,
 )
-from .utils import get_sorted_events, create_an_event
+from .utils import get_sorted_events, create_an_event, get_event_history_client
+from core.services import is_user_employee, is_user_client
+
+from core.serializers import GetAllSerializer
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -35,6 +40,7 @@ class RetrieveEventAPIView(RetrieveAPIView):
     request_body=EventSerializer,
     responses={
         201: SuccessResponse.CREATED,
+        400: ErrorResponse.USER_EMPLOYEE,
         406: ErrorResponse.INVALID_DATA,
     },
 )
@@ -46,6 +52,13 @@ def create_event(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
+
+    if not is_user_employee(request.user):
+        return Response(
+            {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+            status=400,
+        )
+
     event: Event = create_an_event(
         event_serializer.validated_data, request.user.employee_profile
     )
@@ -129,3 +142,30 @@ def add_image_to_event(request):
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     return add_image_serializer.add_image()
+
+class ClientEventHistory(APIView):
+    @swagger_auto_schema(
+        query_serializer=GetAllSerializer,
+        responses={
+            status.HTTP_200_OK: EventHistorySerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+        }
+    )
+    def get(self, request):
+        events_serializer = GetAllSerializer(data=request.GET)
+        if not events_serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if not is_user_client(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        page = events_serializer.validated_data.get("page")
+        page_count = events_serializer.validated_data.get("page_count")
+        events = get_event_history_client(request.user.user_profile, page, page_count, request)
+        return Response({"reserves": EventHistorySerializer(events, many=True).data}, status=200)
+

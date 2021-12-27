@@ -1,5 +1,6 @@
 from core.models import Image
 from rest_flex_fields import FlexFieldsModelSerializer
+from rest_framework import serializers
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 
 
@@ -34,3 +35,8 @@ class ImageAvatarSerializer(FlexFieldsModelSerializer):
         ref_name = "image_serializer"
         model = Image
         fields = ["image"]
+
+
+class GetAllSerializer(serializers.Serializer):
+    page = serializers.IntegerField()
+    page_count = serializers.IntegerField()

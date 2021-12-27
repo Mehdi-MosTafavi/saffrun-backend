@@ -5,6 +5,7 @@ from django.utils import timezone
 from event.models import Event
 from profile.models import EmployeeProfile, UserProfile
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 
 from .models import Reservation
 
@@ -271,5 +272,9 @@ def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
     )
     return reserve_list if len(reserve_list) <= 5 else reserve_list[:5]
 
-def get_reserve_history_client(client: UserProfile):
-    return Reservation.objects.filter(participants=client)
+def get_reserve_history_client(client: UserProfile, page: int, page_count: int, request: Request):
+    paginator = PageNumberPagination()
+    paginator.page_size = page_count
+    paginator.page = page
+    reserves = Reservation.objects.filter(participants=client)
+    return paginator.paginate_queryset(reserves, request)
