@@ -18,7 +18,7 @@ class ProfileBase(BaseModel):
     city = models.CharField(max_length=20, null=True, blank=True)
     province = models.CharField(max_length=20, null=True, blank=True)
     address = models.CharField(max_length=50, null=True, blank=True)
-    gender = models.CharField(choices=GENDER_CHOICES, max_length=1,default='N')
+    gender = models.CharField(choices=GENDER_CHOICES, max_length=1, default='N')
 
     avatar = models.ForeignKey(
         Image,

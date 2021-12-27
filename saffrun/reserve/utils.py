@@ -272,4 +272,4 @@ def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
     return reserve_list if len(reserve_list) <= 5 else reserve_list[:5]
 
 def get_reserve_history_client(client: UserProfile):
-    return Reservation.objects.filter(participants=client)
+    return Reservation.objects.filter(participants=client).order_by('-updated_at')

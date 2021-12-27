@@ -5,6 +5,8 @@ from rest_framework.generics import get_object_or_404
 from .models import Event
 from category.models import Category
 
+from profile.models import UserProfile
+
 
 def filter_from_datetime_query(events_serializer):
     return (
@@ -70,3 +72,6 @@ def create_an_event(validated_data, owner):
         owner=owner,
     )
     return event
+
+def get_event_history_client(client: UserProfile):
+    return Event.objects.filter(participants=client).order_by('-updated_at')

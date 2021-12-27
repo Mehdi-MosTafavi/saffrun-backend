@@ -6,6 +6,7 @@ from core.serializers import ImageSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import F
+from django.utils import timezone
 from profile.models import UserProfile
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers, status
@@ -194,3 +195,25 @@ class SpecificEventSerializer(FlexFieldsModelSerializer):
     class Meta:
         model = Event
         fields = ["id", "title", "description", "image", "owner"]
+
+
+class HistoryEventSerializer(serializers.Serializer):
+    page = serializers.IntegerField()
+    page_count = serializers.IntegerField()
+
+
+class EventHistorySerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_status(event):
+        if event.get_start_datetime() > timezone.now():
+            return "NOT STARTED"
+        if event.get_start_datetime() <= timezone.now() <= event.get_end_datetime():
+            return "RUNNING"
+        if event.get_end_datetime() < timezone.now():
+            return "FINISHED"
+
+    class Meta:
+        model = Event
+        fields = ["id", 'title', "owner", "start_datetime", "end_datetime", "status"]
