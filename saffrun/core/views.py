@@ -9,7 +9,7 @@ from django.db.models import F
 from .models import Image
 from django.utils import timezone
 from .responses import ErrorResponse
-from .serializers import ImageSerializer, HomepageResponse
+from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient
 from profile.models import EmployeeProfile, UserProfile
 from comment.models import Comment
 from event.models import Event
@@ -84,6 +84,64 @@ class HomePage(generics.RetrieveAPIView):
                   })
         if serializer.is_valid():
             return Response(serializer.data)
+        return Response(
+            exception={"error": ErrorResponse.INVALID_DATA,
+                       "validation_errors": serializer.errors},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+class HomePageClient(generics.RetrieveAPIView):
+    permission_classes = (AllowAny,)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profile = None
+
+    def _get_profile(self):
+        try:
+            profile = EmployeeProfile.objects.get(user=self.request.user)
+        except:
+            try:
+                profile = UserProfile.objects.get(user=self.request.user)
+            except:
+                return None
+        if profile is None:
+            return None
+        return profile
+
+    @swagger_auto_schema(
+        responses={
+            status.HTTP_200_OK: HomepageResponseClient,
+            status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponse.INVALID_DATA
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        self.profile = self._get_profile()
+        if self.profile is None:
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        time = timezone.now()
+        serializer = HomepageResponseClient(
+            data={
+                'list_event': Event.objects.filter(
+                    participants__in=[self.profile.id],
+                    end_datetime__gte=time
+                ).order_by('-updated_at').distinct().values('id', 'title', 'description', 'start_datetime',
+                                                            'end_datetime', owner_name=F('owner__user__username')),
+                'list_reserve': Reservation.objects.filter(
+                    participants__in=[self.profile.id],
+                    end_datetime__gte=time
+                ).order_by('-updated_at').distinct().values('id', 'start_datetime', 'end_datetime',
+                                                            ownerId=F('owner__id'),
+                                                            owner_name=F('owner__user__username'),
+                                                            ),
+
+            }
+        )
+        if serializer.is_valid():
+            return Response(serializer.data)
+        print(serializer.errors)
         return Response(
             exception={"error": ErrorResponse.INVALID_DATA,
                        "validation_errors": serializer.errors},

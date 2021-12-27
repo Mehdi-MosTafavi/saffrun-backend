@@ -53,5 +53,6 @@ class HomepageResponse(serializers.Serializer):
     last_events = serializers.ListField(min_length=0, max_length=5, allow_empty=True, child=serializers.DictField())
 
 
-
-
+class HomepageResponseClient(serializers.Serializer):
+    list_event = serializers.ListField(min_length=0, max_length=3, child=serializers.DictField())
+    list_reserve = serializers.ListField(min_length=0, max_length=3, child=serializers.DictField())
