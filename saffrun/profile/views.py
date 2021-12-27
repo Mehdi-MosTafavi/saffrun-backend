@@ -108,10 +108,14 @@ class FollowEmployee(GenericAPIView):
 
     def get(self, request):
         profile: EmployeeProfile = get_object_or_404(EmployeeProfile, user=self.request.user)
-        followers = profile.followers.values('id', 'city', username=F('user__username'),
+        followers = profile.followers.values('id', 'city', 'avatar', username=F('user__username'),
                                              email=F('user__email'))
         for index in range(len(followers)):
-            followers[index]["avatar"] = ImageAvatarSerializer(instance=F('avatar')).data
+            if followers[index]["avatar"] is None:
+                followers[index]["avatar"] = {'image': None}
+            else:
+                followers[index]["avatar"] = ImageAvatarSerializer(
+                    instance=get_object_or_404(Image, id=followers[index]['avatar'])).data
 
         return Response(followers)
 
