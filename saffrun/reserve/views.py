@@ -277,9 +277,8 @@ class ClientReserveHistory(APIView):
                 {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        reserves = get_reserve_history_client(request.user.user_profile)
-        paginator = PageNumberPagination()
-        paginator.page_size = reserves_serializer.validated_data["page_count"]
-        paginator.page = reserves_serializer.validated_data["page"]
-        reserves = paginator.paginate_queryset(reserves, request)
-        return Response({"events": ReserveHistorySerializer(reserves, many=True).data}, status=200)
+        page = reserves_serializer.validated_data.get("page")
+        page_count = reserves_serializer.validated_data.get("page_count")
+        reserves = get_reserve_history_client(request.user.user_profile, page, page_count, request)
+        return Response({"reserves": ReserveHistorySerializer(reserves, many=True).data}, status=200)
+
