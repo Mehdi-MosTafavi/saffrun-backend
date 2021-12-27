@@ -16,7 +16,7 @@ from .serializers import (
     ManyEventSerializer,
     AddParticipantSerializer,
     AddImageSerializer,
-    EventImageSerializer, EventDetailImageSerializer, HistoryEventSerializer, EventHistorySerializer,
+    EventImageSerializer, EventDetailImageSerializer, EventHistorySerializer,
 )
 
 
@@ -147,7 +147,7 @@ def add_image_to_event(request):
 
 class ClientEventHistory(APIView):
     @swagger_auto_schema(
-        query_serializer=HistoryEventSerializer,
+        query_serializer=GetAllSerializer,
         responses={
             status.HTTP_200_OK: EventHistorySerializer,
             status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
