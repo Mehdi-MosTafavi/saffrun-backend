@@ -189,7 +189,7 @@ class AddImageSerializer(serializers.Serializer):
 
 
 class SpecificEventSerializer(FlexFieldsModelSerializer):
-    image = ImageSerializer(allow_null=True)
+    images = ImageSerializer(many=True)
     owner = serializers.SerializerMethodField(method_name="get_owner")
 
     def get_owner(self, reservation):
@@ -197,13 +197,14 @@ class SpecificEventSerializer(FlexFieldsModelSerializer):
 
     class Meta:
         model = Event
-        fields = ["id", "title", "description", "image", "owner", "price"]
+        fields = ["id", "title", "description", "images", "owner", "price"]
 
 
 class EventHistorySerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField("get_status")
     participant_count = serializers.SerializerMethodField("get_participant_count")
     owner = EmployeeProfileSerializer()
+    images = ImageSerializer(many=True)
 
     @staticmethod
     def get_status(event):
@@ -220,4 +221,5 @@ class EventHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ["id", 'title', "owner", "start_datetime", "end_datetime", "price", "status", "participant_count"]
+        fields = ["id", 'title', "owner", "images", "start_datetime", "end_datetime", "price", "status",
+                  "participant_count"]
