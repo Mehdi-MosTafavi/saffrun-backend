@@ -5,6 +5,7 @@ from core.responses import ErrorResponse
 from core.responses import SuccessResponse
 from core.serializers import ImageAvatarSerializer
 from django.db import transaction
+from django.db.models import F
 from drf_yasg.utils import swagger_auto_schema
 from profile.models import EmployeeProfile, UserProfile
 from rest_framework import status
@@ -107,16 +108,12 @@ class FollowEmployee(GenericAPIView):
 
     def get(self, request):
         profile: EmployeeProfile = get_object_or_404(EmployeeProfile, user=self.request.user)
-        followers = profile.followers.all()
-        follwers_list = []
-        for index, follower in enumerate(followers):
-            follwers_list.append({
-                'id': follower.id,
-                'username': follower.user.username,
-                'email': follower.user.email,
-                'city': follower.city,
-                'avatar': ImageSerializer(instance=follower.avatar)})
-        return Response(follwers_list)
+        followers = profile.followers.values('id', 'city', username=F('user__username'),
+                                             email=F('user__email'))
+        for index in range(len(followers)):
+            followers[index]["avatar"] = ImageAvatarSerializer(instance=F('avatar')).data
+
+        return Response(followers)
 
     def post(self, request):
         profile = self._get_user_profile()
