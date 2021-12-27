@@ -1,6 +1,8 @@
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 
 from .models import Event
 from category.models import Category
@@ -68,10 +70,12 @@ def create_an_event(validated_data, owner):
         end_datetime=validated_data["end_datetime"],
         title=validated_data["title"],
         discount=validated_data["discount"],
-        category = get_object_or_404(Category,id=validated_data["category_id"]),
+        category = get_object_or_404(Category, id=validated_data["category_id"]),
         owner=owner,
+        price=validated_data["price"]
     )
     return event
 
 def get_event_history_client(client: UserProfile):
     return Event.objects.filter(participants=client).order_by('-updated_at')
+

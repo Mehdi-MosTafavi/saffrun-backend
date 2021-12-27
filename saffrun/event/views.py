@@ -18,8 +18,12 @@ from .serializers import (
     AddImageSerializer,
     EventImageSerializer, EventDetailImageSerializer, HistoryEventSerializer, EventHistorySerializer,
 )
+
+
 from .utils import get_sorted_events, create_an_event, get_event_history_client
-from core.services import is_user_client
+from core.services import is_user_employee, is_user_client
+
+from core.serializers import GetAllSerializer
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -37,6 +41,7 @@ class RetrieveEventAPIView(RetrieveAPIView):
     request_body=EventSerializer,
     responses={
         201: SuccessResponse.CREATED,
+        400: ErrorResponse.USER_EMPLOYEE,
         406: ErrorResponse.INVALID_DATA,
     },
 )
@@ -48,6 +53,13 @@ def create_event(request):
             {"Error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
+
+    if not is_user_employee(request.user):
+        return Response(
+            {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+            status=400,
+        )
+
     event: Event = create_an_event(
         event_serializer.validated_data, request.user.employee_profile
     )
@@ -143,8 +155,8 @@ class ClientEventHistory(APIView):
         }
     )
     def get(self, request):
-        reserves_serializer = HistoryEventSerializer(data=request.GET)
-        if not reserves_serializer.is_valid():
+        events_serializer = GetAllSerializer(data=request.GET)
+        if not events_serializer.is_valid():
             return Response(
                 exception={"error": ErrorResponse.INVALID_DATA},
                 status=status.HTTP_406_NOT_ACCEPTABLE,
@@ -154,9 +166,7 @@ class ClientEventHistory(APIView):
                 {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        events = get_event_history_client(request.user.user_profile)
-        paginator = PageNumberPagination()
-        paginator.page_size = reserves_serializer.validated_data["page_count"]
-        paginator.page = reserves_serializer.validated_data["page"]
-        events = paginator.paginate_queryset(events, request)
+        page = events_serializer.validated_data.get("page")
+        page_count = events_serializer.validated_data.get("page_count")
+        events = get_event_history_client(request.user.user_profile, page, page_count, request)
         return Response({"reserves": EventHistorySerializer(events, many=True).data}, status=200)

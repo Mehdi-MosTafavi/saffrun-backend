@@ -25,6 +25,8 @@ class Event(BaseModel):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
 
+    price = models.IntegerField(null=False, default=0)
+
     def get_start_datetime(self):
         return self.start_datetime.replace(tzinfo=timezone.utc).astimezone(
             tz=None
@@ -34,3 +36,4 @@ class Event(BaseModel):
         return self.end_datetime.replace(tzinfo=timezone.utc).astimezone(
             tz=None
         )
+

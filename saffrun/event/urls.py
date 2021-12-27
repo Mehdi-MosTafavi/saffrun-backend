@@ -23,6 +23,9 @@ urlpatterns = [
         views.add_image_to_event,
         name="add-image",
     ),
-    path('get-client-event-history', views.ClientEventHistory.as_view(), name='client-event-history')
-
+    path(
+        'get-client-reserve-history',
+        views.ClientEventHistory.as_view(),
+        name='client-reserve-history'
+    )
 ]
