@@ -1,6 +1,10 @@
 from versatileimagefield.fields import VersatileImageField, PPOIField
 from django.db import models
 
+from profile.models import EmployeeProfile
+
+from saffrun.category.models import Category
+
 
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -21,3 +25,19 @@ class Image(BaseModel):
         blank=True,
     )
     image_ppoi = PPOIField(null=True, blank=True)
+
+
+class Business(models.Model):
+    owner = models.OneToOneField(EmployeeProfile, on_delete=models.CASCADE, related_name='business')
+    title = models.CharField(max_length=150)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='businesses')
+    establishment_date = models.DateTimeField()
+    worker_count = models.IntegerField()
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=12)
+    full_address = models.TextField()
+    description = models.TextField()
+    images = models.ManyToManyField(Image, related_name="businesses", blank=True)
+
+    def __str__(self):
+        return self.title
