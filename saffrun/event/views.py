@@ -16,9 +16,10 @@ from .serializers import (
     ManyEventSerializer,
     AddParticipantSerializer,
     AddImageSerializer,
-    EventImageSerializer, EventDetailImageSerializer,
-    EventHistorySerializer,
+    EventImageSerializer, EventDetailImageSerializer, EventHistorySerializer,
 )
+
+
 from .utils import get_sorted_events, create_an_event, get_event_history_client
 from core.services import is_user_employee, is_user_client
 
@@ -143,6 +144,7 @@ def add_image_to_event(request):
         )
     return add_image_serializer.add_image()
 
+
 class ClientEventHistory(APIView):
     @swagger_auto_schema(
         query_serializer=GetAllSerializer,
@@ -168,4 +170,3 @@ class ClientEventHistory(APIView):
         page_count = events_serializer.validated_data.get("page_count")
         events = get_event_history_client(request.user.user_profile, page, page_count, request)
         return Response({"reserves": EventHistorySerializer(events, many=True).data}, status=200)
-

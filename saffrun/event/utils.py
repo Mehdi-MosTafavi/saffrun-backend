@@ -76,9 +76,6 @@ def create_an_event(validated_data, owner):
     )
     return event
 
-def get_event_history_client(client: UserProfile, page: int, page_count: int, request: Request):
-    paginator = PageNumberPagination()
-    paginator.page_size = page_count
-    paginator.page = page
-    events = Event.objects.filter(participants=client)
-    return paginator.paginate_queryset(events, request)
+def get_event_history_client(client: UserProfile):
+    return Event.objects.filter(participants=client).order_by('-updated_at')
+

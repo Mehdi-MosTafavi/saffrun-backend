@@ -24,6 +24,7 @@ class Event(BaseModel):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_event')
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
+
     price = models.IntegerField(null=False, default=0)
 
     def get_start_datetime(self):
@@ -35,3 +36,4 @@ class Event(BaseModel):
         return self.end_datetime.replace(tzinfo=timezone.utc).astimezone(
             tz=None
         )
+
