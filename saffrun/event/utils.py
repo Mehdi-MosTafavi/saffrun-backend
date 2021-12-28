@@ -1,13 +1,12 @@
+from category.models import Category
 from django.db.models import Q
 from django.utils import timezone
+from profile.models import UserProfile
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 
 from .models import Event
-from category.models import Category
-
-from profile.models import UserProfile
 
 
 def filter_from_datetime_query(events_serializer):
@@ -58,8 +57,24 @@ def final_filter_query(events_serializer, owner):
     )
 
 
+def final_filter_query_client(events_serializer):
+    return (
+            Q(title__icontains=events_serializer.data.get("search_query"))
+            & filter_from_datetime_query(events_serializer)
+            & filter_until_datetime_query(events_serializer)
+            & filter_participant_query(events_serializer)
+            & filter_type_query(events_serializer)
+    )
+
+
 def get_sorted_events(events_serializer, owner):
     return Event.objects.filter(final_filter_query(events_serializer, owner)).order_by(
+        events_serializer.data.get("sort").value
+    )
+
+
+def get_sorted_events_client(events_serializer):
+    return Event.objects.filter(final_filter_query_client(events_serializer)).order_by(
         events_serializer.data.get("sort").value
     )
 
@@ -70,11 +85,12 @@ def create_an_event(validated_data, owner):
         end_datetime=validated_data["end_datetime"],
         title=validated_data["title"],
         discount=validated_data["discount"],
-        category = get_object_or_404(Category, id=validated_data["category_id"]),
+        category=get_object_or_404(Category, id=validated_data["category_id"]),
         owner=owner,
         price=validated_data["price"]
     )
     return event
+
 
 def get_event_history_client(client: UserProfile, page: int, page_count: int, request: Request):
     paginator = PageNumberPagination()
@@ -82,4 +98,3 @@ def get_event_history_client(client: UserProfile, page: int, page_count: int, re
     paginator.page = page
     events = Event.objects.filter(participants=client)
     return paginator.paginate_queryset(events, request)
-
