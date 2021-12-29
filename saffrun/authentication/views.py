@@ -18,7 +18,7 @@ class RegisterUser(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def __init__(
-        self,
+            self,
     ):
         super().__init__()
         self.client_type = None
@@ -67,5 +67,8 @@ class ChangePassword(generics.GenericAPIView):
         if not recover_serializer.is_valid():
             print(recover_serializer.errors)
             return Response({"status": "Error"})
-        send_email.apply_async(args=[recover_serializer.validated_data['username']])
+        try:
+            send_email.apply_async(args=[recover_serializer.validated_data['username']])
+        except:
+            return Response()
         return Response()
