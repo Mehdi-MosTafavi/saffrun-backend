@@ -78,7 +78,7 @@ class UserView(APIView):
             profile.address = self.request.data["address"]
             profile.gender = self.request.data["gender"]
             if "image_id" in self.request.data:
-                profile.avatar = get_object_or_404(Image, self.request.data["image_id"])
+                profile.avatar = get_object_or_404(Image, id=self.request.data["image_id"])
             if isinstance(profile, EmployeeProfile):
                 profile.category = get_object_or_404(Category, id=self.request.data["category_id"])
             with transaction.atomic():
@@ -125,10 +125,8 @@ class FollowEmployee(GenericAPIView):
         if employee in profile.following.all():
             profile.following.remove(employee)
             profile.save()
-            return Response(
-                {"status": "Error", "detail": ErrorResponse.FOLLOWING_BEFORE},
-                status=400,
-            )
+            return Response({"status": "Done Remove"})
+
         profile.following.add(employee)
         profile.save()
         return Response({"status": "Done"})
