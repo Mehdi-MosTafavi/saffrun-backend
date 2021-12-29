@@ -1,4 +1,3 @@
-from category.models import Category
 from core.models import Image
 from core.responses import ErrorResponse
 # Create your views here.
@@ -25,8 +24,11 @@ class UserView(APIView):
     def get_profile(self):
         try:
             profile = EmployeeProfile.objects.get(user=self.request.user)
-        except EmployeeProfile.DoesNotExist:
-            profile = UserProfile.objects.get(user=self.request.user)
+        except:
+            try:
+                profile = UserProfile.objects.get(user=self.request.user)
+            except:
+                profile = None
         if profile is None:
             raise Exception('No profile Found!')
         return profile
@@ -79,8 +81,6 @@ class UserView(APIView):
             profile.gender = self.request.data["gender"]
             if "image_id" in self.request.data:
                 profile.avatar = get_object_or_404(Image, id=self.request.data["image_id"])
-            if isinstance(profile, EmployeeProfile):
-                profile.category = get_object_or_404(Category, id=self.request.data["category_id"])
             with transaction.atomic():
                 user.save()
                 profile.save()
