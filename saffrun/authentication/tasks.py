@@ -6,7 +6,7 @@ from saffrun.settings import EMAIL_HOST_USER
 
 @app.task(bind=True)
 def send_email(self, *args):
-    user = User.objects.get(id=args[0])
+    user = User.objects.get(username=args[0])
     new_password = User.objects.make_random_password()
     user.set_password(new_password)
     user.save()
