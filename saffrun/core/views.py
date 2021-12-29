@@ -1,19 +1,20 @@
+from comment.models import Comment
 from django.db.models import Count
+from django.db.models import F
 from django.db.models.functions import TruncMonth
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
+from event.models import Event
+from profile.models import EmployeeProfile, UserProfile
+from reserve.models import Reservation
 from rest_flex_fields import FlexFieldsModelViewSet
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.db.models import F
+
 from .models import Image
-from django.utils import timezone
 from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient
-from profile.models import EmployeeProfile, UserProfile
-from comment.models import Comment
-from event.models import Event
-from reserve.models import Reservation
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -60,8 +61,14 @@ class HomePage(generics.RetrieveAPIView):
                   'last_events': Event.objects.filter(owner=self.profile).order_by(
                       '-id').annotate(participant_count=Count('participants')).values('title',
                                                                                       'start_datetime',
-                                                                                      'participant_count'),
+                                                                                      'end_datetime',
+                                                                                      'participant_count',
+                                                                                      province=F('owner__province')),
                   'number_of_comments': Comment.objects.filter(owner=self.profile).count(),
+                  'number_of_user_comments': Comment.objects.filter(owner=self.profile, is_parent=True).values(
+                      'user').distinct().count(),
+                  'rate': 4.5,
+                  'number_user_rate': 10,
                   'last_comments': Comment.objects.filter(owner=self.profile).order_by(
                       '-id').annotate(
                       username=F('user__user__username')).values('username',
@@ -70,14 +77,7 @@ class HomePage(generics.RetrieveAPIView):
                   'number_of_all_reserves': Reservation.objects.filter(owner=self.profile).count(),
                   'number_of_given_reserves': Reservation.objects.filter(
                       owner=self.profile, participants__isnull=False).count(),
-                  'last_given_reserves': Reservation.objects.filter(owner=self.profile,
-                                                                    participants__isnull=False).order_by(
-                      '-updated_at').annotate(first_name=F('participants__user__first_name'),
-                                              last_name=F(
-                                                  'participants__user__last_name')).values(
-                      'first_name',
-                      'last_name',
-                      'start_datetime')[:5],
+                  'last_given_reserves': self.get_reserve_of_user(),
                   'monthly_reserves': Reservation.objects.annotate(
                       month=TruncMonth('end_datetime'), total=Count('participants')).values(
                       'month', 'total').order_by('month').distinct(),
@@ -89,6 +89,29 @@ class HomePage(generics.RetrieveAPIView):
                        "validation_errors": serializer.errors},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+    def get_reserve_of_user(self):
+        reserves = Reservation.objects.filter(owner=self.profile,
+                                              participants__isnull=False).order_by(
+            '-updated_at').distinct()
+        reserves_list = []
+        for reserve in reserves:
+            list_participants = []
+            for user in reserve.participants.all():
+                list_participants.append({
+                    'first_name': user.user.first_name,
+                    'last_name': user.user.last_name,
+                    'image': ImageSerializer(instance=user.avatar).data
+                })
+            reserves_list.append({
+                'start_datetime': reserve.get_start_datetime(),
+                'end_datetime': reserve.get_end_datetime(),
+                'province': reserve.owner.province,
+                'list_participants': list_participants
+            })
+        return reserves_list[:5]
+
+
 class HomePageClient(generics.RetrieveAPIView):
     permission_classes = (AllowAny,)
 
