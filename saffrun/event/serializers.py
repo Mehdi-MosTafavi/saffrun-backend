@@ -6,6 +6,7 @@ from core.serializers import ImageSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import F
+from django.utils import timezone
 from profile.models import UserProfile
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers, status
@@ -13,6 +14,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .models import Event
+from profile.serializers import EmployeeProfileSerializer
 
 
 class EventSerializer(FlexFieldsModelSerializer):
@@ -27,6 +29,7 @@ class EventSerializer(FlexFieldsModelSerializer):
             "category_id",
             "start_datetime",
             "end_datetime",
+            "price"
         ]
 
 
@@ -82,6 +85,7 @@ class EventDetailImageSerializer(FlexFieldsModelSerializer):
             "title",
             "description",
             "discount",
+            "price",
             "owner",
             'participants',
             "start_datetime",
@@ -108,7 +112,6 @@ class EventDetailImageSerializer(FlexFieldsModelSerializer):
             'id': obj.owner.id,
             'title': obj.owner.user.username
         }
-
     def get_comments(self, obj):
         comments = Comment.objects.filter(event__isnull=False, is_parent=True).filter(event__id=obj.id).order_by(
             '-updated_at').values('id', name=F('user__user__last_name'), date=F('created_at'), text=F('content'))
@@ -193,4 +196,27 @@ class SpecificEventSerializer(FlexFieldsModelSerializer):
 
     class Meta:
         model = Event
-        fields = ["id", "title", "description", "image", "owner"]
+        fields = ["id", "title", "description", "image", "owner", "price"]
+
+class EventHistorySerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField("get_status")
+    participant_count = serializers.SerializerMethodField("get_participant_count")
+    owner = EmployeeProfileSerializer()
+
+    @staticmethod
+    def get_status(event):
+        if event.get_start_datetime() > timezone.now():
+            return "NOT STARTED"
+        if event.get_start_datetime() <= timezone.now() <= event.get_end_datetime():
+            return "RUNNING"
+        if event.get_end_datetime() < timezone.now():
+            return "FINISHED"
+
+    @staticmethod
+    def get_participant_count(event):
+        return event.participants.count()
+
+    class Meta:
+        model = Event
+        fields = ["id", "owner", "start_datetime", "end_datetime", "price", "status", "participant_count"]
+

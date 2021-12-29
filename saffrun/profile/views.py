@@ -1,4 +1,3 @@
-from category.models import Category
 from core.models import Image
 from core.responses import ErrorResponse
 # Create your views here.
@@ -25,8 +24,11 @@ class UserView(APIView):
     def _get_profile(self):
         try:
             profile = EmployeeProfile.objects.get(user=self.request.user)
-        except EmployeeProfile.DoesNotExist:
-            profile = UserProfile.objects.get(user=self.request.user)
+        except:
+            try:
+                profile = UserProfile.objects.get(user=self.request.user)
+            except:
+                profile = None
         if profile is None:
             raise Exception('No profile Found!')
         return profile
@@ -78,9 +80,7 @@ class UserView(APIView):
             profile.address = self.request.data["address"]
             profile.gender = self.request.data["gender"]
             if "image_id" in self.request.data:
-                profile.avatar = get_object_or_404(Image, self.request.data["image_id"])
-            if isinstance(profile, EmployeeProfile):
-                profile.category = get_object_or_404(Category, id=self.request.data["category_id"])
+                profile.avatar = get_object_or_404(Image, id=self.request.data["image_id"])
             with transaction.atomic():
                 user.save()
                 profile.save()
@@ -108,10 +108,14 @@ class FollowEmployee(GenericAPIView):
 
     def get(self, request):
         profile: EmployeeProfile = get_object_or_404(EmployeeProfile, user=self.request.user)
-        followers = profile.followers.values('id', 'city', username=F('user__username'),
+        followers = profile.followers.values('id', 'city', 'avatar', username=F('user__username'),
                                              email=F('user__email'))
         for index in range(len(followers)):
-            followers[index]["avatar"] = ImageAvatarSerializer(instance=F('avatar')).data
+            if followers[index]["avatar"] is None:
+                followers[index]["avatar"] = {'image': None}
+            else:
+                followers[index]["avatar"] = ImageAvatarSerializer(
+                    instance=get_object_or_404(Image, id=followers[index]['avatar'])).data
 
         return Response(followers)
 
@@ -121,10 +125,8 @@ class FollowEmployee(GenericAPIView):
         if employee in profile.following.all():
             profile.following.remove(employee)
             profile.save()
-            return Response(
-                {"status": "Error", "detail": ErrorResponse.FOLLOWING_BEFORE},
-                status=400,
-            )
+            return Response({"status": "Done Remove"})
+
         profile.following.add(employee)
         profile.save()
         return Response({"status": "Done"})

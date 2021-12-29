@@ -37,6 +37,7 @@ class ImageAvatarSerializer(FlexFieldsModelSerializer):
         fields = ["image"]
 
 
+
 class HomepageResponse(serializers.Serializer):
     first_name = serializers.CharField(allow_blank=True)
     last_name = serializers.CharField(allow_blank=True)
@@ -59,3 +60,8 @@ class HomepageResponse(serializers.Serializer):
 class HomepageResponseClient(serializers.Serializer):
     list_event = serializers.ListField(min_length=0, max_length=3, child=serializers.DictField())
     list_reserve = serializers.ListField(min_length=0, max_length=3, child=serializers.DictField())
+    
+class GetAllSerializer(serializers.Serializer):
+    page = serializers.IntegerField()
+    page_count = serializers.IntegerField()
+
