@@ -1,6 +1,7 @@
 from django.db import transaction
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import generics
+from rest_framework import generics, status
 from authentication.serializers import (
     RegisterSerializer,
 )
@@ -8,6 +9,7 @@ from rest_framework.response import Response
 from core.responses import ErrorResponse
 from profile.models import EmployeeProfile, UserProfile
 
+from .serializers import RecoverPasswordSerializer
 from .tasks import send_email
 
 
@@ -16,7 +18,7 @@ class RegisterUser(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def __init__(
-        self,
+            self,
     ):
         super().__init__()
         self.client_type = None
@@ -51,8 +53,22 @@ class RegisterUser(generics.CreateAPIView):
 
 
 class ChangePassword(generics.GenericAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
+    @swagger_auto_schema(
+        request_body=RecoverPasswordSerializer,
+        responses={
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_EMPLOYEE,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+        }
+    )
     def post(self, request):
-        send_email.apply_async(args=[self.request.user.id])
+        recover_serializer = RecoverPasswordSerializer(data=request.data)
+        if not recover_serializer.is_valid():
+            print(recover_serializer.errors)
+            return Response({"status": "Error"})
+        try:
+            send_email.apply_async(args=[recover_serializer.validated_data['username']])
+        except:
+            return Response()
         return Response()

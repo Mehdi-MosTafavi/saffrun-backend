@@ -11,6 +11,9 @@ from rest_framework import serializers
 from .models import Reservation
 from .utils import check_collision, create_reserve_objects
 
+from core.serializers import ImageSerializer
+
+
 
 class ReservePeriodSerializer(serializers.Serializer):
     start_time = serializers.TimeField()
@@ -161,7 +164,7 @@ class ReserveOwnerDetail(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ["id", 'capacity', 'date', "start_time", "end_time", 'participants', 'price']
+        fields = ["id", "capacity", 'date', "start_time", "end_time", 'participants', "price"]
 
     def get_participants(self, obj):
         particpiants_list = []
@@ -215,6 +218,7 @@ class ReserveEmployeeSerializer(serializers.Serializer):
 class ReserveHistorySerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField("get_status")
     owner = EmployeeProfileSerializer()
+    image = serializers.SerializerMethodField()
 
     @staticmethod
     def get_status(reserve):
@@ -225,10 +229,12 @@ class ReserveHistorySerializer(serializers.ModelSerializer):
         if reserve.get_end_datetime() < timezone.now():
             return "FINISHED"
 
+    def get_image(self, obj):
+        return ImageSerializer(instance=obj.owner.avatar).data
+
     class Meta:
         model = Reservation
-        fields = ["id", "owner", "start_datetime", "end_datetime", "price", "status"]
-
+        fields = ["id", "owner", "image", "start_datetime", "end_datetime", "price", "status"]
 
 class ReserveDetailSerializer(serializers.Serializer):
     date = serializers.DateField()
@@ -253,3 +259,4 @@ class ReserveDetailAllReservation(serializers.Serializer):
 class ReserveDetailAllReservationResponseSerializer(serializers.Serializer):
     pages = serializers.IntegerField()
     reserves = serializers.ListField(child=serializers.DictField())
+

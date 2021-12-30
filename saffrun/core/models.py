@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from versatileimagefield.fields import VersatileImageField, PPOIField
 from django.db import models
 
@@ -9,8 +8,6 @@ class BaseModel(models.Model):
     is_active = models.BooleanField(default=True)
     class Meta:
         abstract = True
-
-
 
 class Image(BaseModel):
     def get_file_path(self, filename):

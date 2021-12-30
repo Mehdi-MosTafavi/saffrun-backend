@@ -276,5 +276,5 @@ def get_reserve_history_client(client: UserProfile, page: int, page_count: int, 
     paginator = PageNumberPagination()
     paginator.page_size = page_count
     paginator.page = page
-    reserves = Reservation.objects.filter(participants=client)
+    reserves = Reservation.objects.filter(participants=client).order_by('-updated_at')
     return paginator.paginate_queryset(reserves, request)

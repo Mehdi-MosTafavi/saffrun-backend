@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   db:
-    image: m.docker-registry.ir/postgres:12
+    image: m.docker-registry.ir/postgres:12.9
     volumes:
       - ./data/db:/var/lib/postgresql/data
     environment:
@@ -21,7 +21,7 @@ services:
     tty: true
     environment:
       - DB_HOST=db
-    command: /bin/bash -c "cd saffrun && python manage.py migrate && python manage.py loaddata users profiles && celery -A saffrun worker --loglevel=INFO -D && python manage.py runserver 0.0.0.0:8000"
+    command: /bin/bash -c "cd saffrun && python manage.py migrate && python manage.py loaddata users categories profiles events && celery -A saffrun worker --loglevel=INFO -D && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/code
     ports:
