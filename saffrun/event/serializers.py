@@ -15,6 +15,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .models import Event
+from core.serializers import ImageAvatarSerializer
 
 
 class EventSerializer(FlexFieldsModelSerializer):
@@ -67,7 +68,13 @@ class EventImageSerializer(FlexFieldsModelSerializer):
         }
 
     def get_participants(self, obj):
-        return obj.participants.all().count()
+        particpiants_list = []
+        for participant in obj.participants.all():
+            particpiants_list.append({
+                'name': participant.user.username,
+                'image': ImageAvatarSerializer(instance=participant.avatar).data
+            })
+        return particpiants_list
 
 
 class EventDetailImageSerializer(FlexFieldsModelSerializer):
