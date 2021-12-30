@@ -63,7 +63,7 @@ class UserView(APIView):
     def put(self, request):
         user = self.request.user
         try:
-            profile = self.get_profile()
+            profile = self._get_profile()
         except KeyError as err:
             return Response(
                 {"status": "Error", "detail": ErrorResponse.NOT_PROFILE_FOUND},
