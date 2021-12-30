@@ -1,14 +1,20 @@
 from core.responses import ErrorResponse, SuccessResponse
+from core.serializers import GetAllSerializer
+from core.services import is_user_client
+from django.db.models import Count, F, FloatField
+from django.db.models.functions import Cast
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from event.services import get_all_events_of_specific_day
 from profile.models import EmployeeProfile
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.generics import get_object_or_404, RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .models import Reservation
 from .serializers import (
     CreateReservesSerializer,
     DateSerializer,
@@ -17,9 +23,8 @@ from .serializers import (
     GetAdminSerializer,
     NextSevenDaysSerializer,
     ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer, AbstractReserveSerializer,
-    ReserveFutureSeriallizer, ReserveHistorySerializer,
+    ReserveFutureSeriallizer, ReserveHistorySerializer, ReserveDetailSerializer,
 )
-from core.serializers import GetAllSerializer
 from .utils import (
     get_user_busy_dates_list,
     get_all_user_reserves_in_a_day,
@@ -29,7 +34,6 @@ from .utils import (
     get_reserve_abstract_dictionary, get_current_reserve, get_nearest_busy_reserve,
     get_paginated_past_reservation_result, get_paginated_future_reservation_result, get_reserve_history_client,
 )
-from core.services import is_user_client
 
 
 @swagger_auto_schema(
@@ -98,6 +102,7 @@ def get_past_reserves(request):
     )
     return Response({"reserves": past_result}, status=200)
 
+
 @swagger_auto_schema(
     method="get",
     query_serializer=GetAllSerializer,
@@ -118,6 +123,7 @@ def get_future_reserves(request):
         reserves_serializer, request
     )
     return Response({"reserves": future_result}, status=200)
+
 
 @swagger_auto_schema(
     method="get",
@@ -282,3 +288,77 @@ class ClientReserveHistory(APIView):
         reserves = get_reserve_history_client(request.user.user_profile, page, page_count, request)
         return Response({"reserves": ReserveHistorySerializer(reserves, many=True).data}, status=200)
 
+
+class ReserveDetail(RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profile = None
+
+    def _get_profile(self):
+        try:
+            profile = EmployeeProfile.objects.get(user=self.request.user)
+        except:
+            raise Exception('No profile Found!')
+        return profile
+
+    @swagger_auto_schema(
+        query_serializer=DaySerializer,
+        responses={
+            status.HTTP_200_OK: ReserveDetailSerializer,
+            status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponse.INVALID_DATA
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        query_serializer = DaySerializer(data=request.GET)
+        if not query_serializer.is_valid():
+            return Response({"status": "Error"})
+        try:
+            self.profile = self._get_profile()
+        except:
+            return Response({"message": "profile not found"})
+        date = query_serializer.validated_data['date']
+        current_time = timezone.datetime.now()
+        serializer = ReserveDetailSerializer(
+            data={
+                "date": date,
+                "number_of_reservation": Reservation.objects.filter(start_datetime__date=date,
+                                                                    owner=self.profile).distinct().count(),
+                "payment_of_date": 30000,
+                "number_of_users": self.get_participant_count(date),
+                "number_of_full_reservation": self.get_participant_count_query(
+                    date).filter(participant_count=F('capacity')).count(),
+                "number_of_half_full_reservation": self.get_participant_count_query(
+                    date).filter(participant_count__lt=F('capacity'),
+                                 participant_count__gt=0).count(),
+                "number_of_empty_reservation": self.get_participant_count_query(
+                    date).filter(participant_count=0).count(),
+                "nearest_reserve": ReserveOwnerDetail(instance=self.get_nearest_reserve_detail(current_time)).data,
+                "data_of_chart": self.get_participant_count_query(date).values('start_datetime',
+                                                                               percent_full=Cast(F('participant_count'),
+                                                                                                 FloatField()) / Cast(F(
+                                                                                   'capacity'), FloatField()))
+            })
+        if serializer.is_valid():
+            return Response(serializer.data)
+        print(serializer.errors)
+        return Response(
+            exception={"error": ErrorResponse.INVALID_DATA,
+                       "validation_errors": serializer.errors},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    def get_nearest_reserve_detail(self, current_time):
+        return Reservation.objects.filter(start_datetime__gte=current_time,
+                                          start_datetime__date=current_time.date(),
+                                          owner=self.profile).first()
+
+    def get_participant_count_query(self, date):
+        return Reservation.objects.filter(start_datetime__date=date,
+                                          owner=self.profile).annotate(
+            participant_count=Count("participants"))
+
+    def get_participant_count(self, date):
+        return sum(self.get_participant_count_query(
+            date).values_list('participant_count', flat=True))

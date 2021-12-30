@@ -13,5 +13,6 @@ urlpatterns = [
     ),
     path("reserve-employee/", views.reserve_employee, name="reserve-employee"),
     path("get-nearest-reserve/", views.get_nearest_reserve, name="get-near-reserve"),
-    path('get-client-reserve-history', views.ClientReserveHistory.as_view() , name='client-reserve-history')
+    path('get-client-reserve-history', views.ClientReserveHistory.as_view() , name='client-reserve-history'),
+    path('web/get-reserve-detail', views.ReserveDetail.as_view() , name='reserve-detail')
 ]
