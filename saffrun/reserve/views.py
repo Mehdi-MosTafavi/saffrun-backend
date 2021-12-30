@@ -338,7 +338,8 @@ class ReserveDetail(RetrieveAPIView):
                                  participant_count__gt=0).count(),
                 "number_of_empty_reservation": self.get_participant_count_query(
                     date).filter(participant_count=0).count(),
-                "nearest_reserve": ReserveOwnerDetail(instance=self.get_nearest_reserve_detail(current_time)).data,
+                "nearest_reserve": ReserveOwnerDetail(
+                    instance=self.get_nearest_reserve_detail(current_time, date)).data,
                 "data_of_chart": self.get_participant_count_query(date).values('start_datetime',
                                                                                percent_full=Cast(F('participant_count'),
                                                                                                  FloatField()) / Cast(F(
@@ -353,9 +354,9 @@ class ReserveDetail(RetrieveAPIView):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    def get_nearest_reserve_detail(self, current_time):
+    def get_nearest_reserve_detail(self, current_time, date):
         return Reservation.objects.filter(start_datetime__gte=current_time,
-                                          start_datetime__date=current_time.date(),
+                                          start_datetime__date=date,
                                           owner=self.profile).first()
 
     def get_participant_count_query(self, date):
