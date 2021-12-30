@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from core.models import BaseModel
+from core.models import BaseModel, Image
 
 from event.models import Event
 from profile.models import UserProfile, EmployeeProfile

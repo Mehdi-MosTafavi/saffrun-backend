@@ -10,7 +10,9 @@ from rest_framework import serializers
 
 from .models import Reservation
 from .utils import check_collision, create_reserve_objects
+
 from core.serializers import ImageSerializer
+
 
 
 class ReservePeriodSerializer(serializers.Serializer):
@@ -233,3 +235,28 @@ class ReserveHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
         fields = ["id", "owner", "image", "start_datetime", "end_datetime", "price", "status"]
+
+class ReserveDetailSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    number_of_reservation = serializers.IntegerField()
+    payment_of_date = serializers.IntegerField()
+    number_of_users = serializers.IntegerField()
+    number_of_full_reservation = serializers.IntegerField()
+    number_of_half_full_reservation = serializers.IntegerField()
+    number_of_empty_reservation = serializers.IntegerField()
+    nearest_reserve = serializers.DictField()
+    data_of_chart = serializers.ListField(child=serializers.DictField())
+
+
+class ReserveRemoveSerializer(serializers.Serializer):
+    reserve_id = serializers.IntegerField()
+
+class ReserveDetailAllReservation(serializers.Serializer):
+    page = serializers.IntegerField()
+    page_count = serializers.IntegerField()
+    date = serializers.DateField()
+
+class ReserveDetailAllReservationResponseSerializer(serializers.Serializer):
+    pages = serializers.IntegerField()
+    reserves = serializers.ListField(child=serializers.DictField())
+

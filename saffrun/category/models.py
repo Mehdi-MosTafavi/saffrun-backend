@@ -1,7 +1,8 @@
 from django.db import models
 
 # Create your models here.
-from core.models import BaseModel
+from core.models import BaseModel, Image
+
 
 
 class Category(BaseModel):

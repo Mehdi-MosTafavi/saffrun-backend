@@ -270,7 +270,7 @@ def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
         participant_count=Count("participants")).filter(
         participant_count__gte=0
     )
-    return reserve_list if len(reserve_list) <= 5 else reserve_list[:5]
+    return reserve_list[:5]
 
 def get_reserve_history_client(client: UserProfile, page: int, page_count: int, request: Request):
     paginator = PageNumberPagination()
