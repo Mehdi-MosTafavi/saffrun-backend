@@ -24,3 +24,7 @@ class ShortUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username"]
+
+
+class RecoverPasswordSerializer(serializers.Serializer):
+    username = serializers.CharField()
