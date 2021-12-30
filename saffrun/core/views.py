@@ -47,7 +47,9 @@ class HomePage(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         self.profile = self._get_profile()
         serializer = HomepageResponse(
-            data={'first_name': self.profile.user.first_name,
+            data={
+                'image' : ImageSerializer(self.profile.avatar).data,
+                'first_name': self.profile.user.first_name,
                   'last_name': self.profile.user.last_name,
                   'followers': self.profile.followers.count(),
                   'number_of_events': Event.objects.filter(owner=self.profile).count(),

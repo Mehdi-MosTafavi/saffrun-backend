@@ -39,6 +39,7 @@ class ImageAvatarSerializer(FlexFieldsModelSerializer):
 
 
 class HomepageResponse(serializers.Serializer):
+    image = serializers.DictField()
     first_name = serializers.CharField(allow_blank=True)
     last_name = serializers.CharField(allow_blank=True)
     followers = serializers.IntegerField(min_value=0)
