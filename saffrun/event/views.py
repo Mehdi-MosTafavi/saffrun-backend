@@ -1,5 +1,6 @@
 from core.responses import ErrorResponse, SuccessResponse
-from core.services import is_user_employee
+from core.serializers import GetAllSerializer
+from core.services import is_user_employee, is_user_client
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -18,12 +19,7 @@ from .serializers import (
     AddImageSerializer,
     EventImageSerializer, EventDetailImageSerializer, EventHistorySerializer,
 )
-
-
-from .utils import get_sorted_events, create_an_event, get_event_history_client
-from core.services import is_user_employee, is_user_client
-
-from core.serializers import GetAllSerializer
+from .utils import get_sorted_events, create_an_event, get_event_history_client, get_sorted_events_client
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -90,6 +86,16 @@ def get_all_events(request):
         )
     if is_user_employee(request.user):
         events = get_sorted_events(events_serializer, request.user.employee_profile)
+        paginator = PageNumberPagination()
+        paginator.page_size = events_serializer.validated_data["page_count"]
+        paginator.page = events_serializer.validated_data["page"]
+        events = paginator.paginate_queryset(events, request)
+        return Response(
+            {"events": EventImageSerializer(instance=events, many=True).data},
+            status=status.HTTP_200_OK,
+        )
+    elif is_user_client(request.user):
+        events = get_sorted_events_client(events_serializer)
         paginator = PageNumberPagination()
         paginator.page_size = events_serializer.validated_data["page_count"]
         paginator.page = events_serializer.validated_data["page"]
