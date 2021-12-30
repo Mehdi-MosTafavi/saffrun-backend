@@ -2,6 +2,7 @@ from authentication.serializers import ShortUserSerializer
 from comment.models import Comment
 from core.models import Image
 from core.responses import ErrorResponse
+from core.serializers import ImageAvatarSerializer
 from core.serializers import ImageSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -15,7 +16,6 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .models import Event
-from core.serializers import ImageAvatarSerializer
 
 
 class EventSerializer(FlexFieldsModelSerializer):
@@ -71,6 +71,7 @@ class EventImageSerializer(FlexFieldsModelSerializer):
         particpiants_list = []
         for participant in obj.participants.all():
             particpiants_list.append({
+                'id': participant.id,
                 'name': participant.user.username,
                 'image': ImageAvatarSerializer(instance=participant.avatar).data
             })
@@ -230,3 +231,8 @@ class EventHistorySerializer(serializers.ModelSerializer):
         model = Event
         fields = ["id", 'title', "owner", "images", "start_datetime", "end_datetime", "price", "status",
                   "participant_count"]
+
+
+class RemoveParticipantsSerializer(serializers.Serializer):
+    event_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
