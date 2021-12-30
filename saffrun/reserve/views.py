@@ -1,3 +1,5 @@
+from math import ceil
+
 from core.responses import ErrorResponse, SuccessResponse
 from core.serializers import GetAllSerializer
 from core.services import is_user_client
@@ -10,6 +12,7 @@ from profile.models import EmployeeProfile
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404, RetrieveAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,7 +26,8 @@ from .serializers import (
     GetAdminSerializer,
     NextSevenDaysSerializer,
     ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer, AbstractReserveSerializer,
-    ReserveFutureSeriallizer, ReserveHistorySerializer, ReserveDetailSerializer,
+    ReserveFutureSeriallizer, ReserveHistorySerializer, ReserveDetailSerializer, ReserveRemoveSerializer,
+    ReserveDetailAllReservation, ReserveDetailAllReservationResponseSerializer,
 )
 from .utils import (
     get_user_busy_dates_list,
@@ -362,3 +366,122 @@ class ReserveDetail(RetrieveAPIView):
     def get_participant_count(self, date):
         return sum(self.get_participant_count_query(
             date).values_list('participant_count', flat=True))
+
+
+@swagger_auto_schema(
+    method="DELETE",
+    request_body=DaySerializer,
+    responses={
+        201: SuccessResponse.DELETED,
+        406: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["DELETE"])
+def remove_all_reserve_of_date(request):
+    query_serializer = DaySerializer(data=request.data)
+    if not query_serializer.is_valid():
+        return Response({"status": "Error"})
+    try:
+        profile = get_object_or_404(EmployeeProfile, user=request.user)
+    except:
+        return Response({"message": "profile not found"})
+    reserves = Reservation.objects.filter(start_datetime__date=query_serializer.validated_data['date'],
+                                          owner=profile)
+    try:
+        for reserve in reserves:
+            reserve.is_active = False
+            reserve.save()
+        return Response(
+            {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
+        )
+    except:
+        return Response(
+            {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@swagger_auto_schema(
+    method="DELETE",
+    request_body=ReserveRemoveSerializer,
+    responses={
+        201: SuccessResponse.DELETED,
+        406: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["DELETE"])
+def remove_reserve(request):
+    query_serializer = ReserveRemoveSerializer(data=request.data)
+    if not query_serializer.is_valid():
+        return Response({"status": "Error"})
+    try:
+        profile = get_object_or_404(EmployeeProfile, user=request.user)
+    except:
+        return Response({"message": "profile not found"})
+    reserve = get_object_or_404(Reservation, id=query_serializer.validated_data['reserve_id'])
+    try:
+        reserve.is_active = False
+        reserve.save()
+        return Response(
+            {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
+        )
+    except:
+        return Response(
+            {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class ResarvationTableReserveDetail(RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profile = None
+
+    def _get_profile(self):
+        try:
+            profile = EmployeeProfile.objects.get(user=self.request.user)
+        except:
+            raise Exception('No profile Found!')
+        return profile
+
+    @swagger_auto_schema(
+        query_serializer=ReserveDetailAllReservation,
+        responses={
+            status.HTTP_200_OK: ReserveDetailAllReservationResponseSerializer,
+            status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponse.INVALID_DATA
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        query_serializer = ReserveDetailAllReservation(data=request.GET)
+        if not query_serializer.is_valid():
+            return Response({"status": "Error"})
+        try:
+            self.profile = self._get_profile()
+        except:
+            return Response({"message": "profile not found"})
+        date = query_serializer.validated_data['date']
+        page = query_serializer.validated_data['page']
+        page_count = query_serializer.validated_data['page_count']
+        current_time = timezone.datetime.now()
+        paginator = PageNumberPagination()
+        paginator.page_size = page_count
+        paginator.page = page
+        serializer = ReserveDetailAllReservationResponseSerializer(
+            data={
+                'pages': ceil(Reservation.objects.filter(start_datetime__date=date,
+                                                         owner=self.profile).count() / page_count),
+                'reserves': ReserveOwnerDetail(
+                    instance=paginator.paginate_queryset(Reservation.objects.filter(start_datetime__date=date,
+                                                                                    owner=self.profile), request),
+                    many=True).data
+            })
+        if serializer.is_valid():
+            return Response(serializer.data)
+        print(serializer.errors)
+        return Response(
+            exception={"error": ErrorResponse.INVALID_DATA,
+                       "validation_errors": serializer.errors},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

@@ -3,7 +3,7 @@ from django.db import models
 from django.db import models
 
 # Create your models here.
-from core.models import Comment, BaseModel, Image
+from core.models import BaseModel, Image
 
 
 class Category(BaseModel):

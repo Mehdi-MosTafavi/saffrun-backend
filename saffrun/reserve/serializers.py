@@ -240,3 +240,16 @@ class ReserveDetailSerializer(serializers.Serializer):
     number_of_empty_reservation = serializers.IntegerField()
     nearest_reserve = serializers.DictField()
     data_of_chart = serializers.ListField(child=serializers.DictField())
+
+
+class ReserveRemoveSerializer(serializers.Serializer):
+    reserve_id = serializers.IntegerField()
+
+class ReserveDetailAllReservation(serializers.Serializer):
+    page = serializers.IntegerField()
+    page_count = serializers.IntegerField()
+    date = serializers.DateField()
+
+class ReserveDetailAllReservationResponseSerializer(serializers.Serializer):
+    pages = serializers.IntegerField()
+    reserves = serializers.ListField(child=serializers.DictField())

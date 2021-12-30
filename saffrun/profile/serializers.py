@@ -30,3 +30,4 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
 
 class RemoveFollowerSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
+
