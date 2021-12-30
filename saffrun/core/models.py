@@ -1,10 +1,5 @@
 from django.db import models
 
-from profile.models import EmployeeProfile
-
-from saffrun.category.models import Category
-
-
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -42,6 +37,6 @@ class Business(models.Model):
     phone_number = models.CharField(max_length=12, null=True)
     full_address = models.TextField(null=True)
     description = models.TextField(null=True)
-    images = models.ManyToManyField(Image, related_name="businesses", blank=True, null=True)
+    images = models.ManyToManyField(Image, related_name="businesses", blank=True)
     rate = models.FloatField(null=True)
     rate_count = models.IntegerField(null=True)

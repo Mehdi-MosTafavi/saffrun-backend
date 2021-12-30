@@ -55,6 +55,7 @@ class RegisterUser(generics.CreateAPIView):
             profile.save()
             if business:
                 business.save()
+                profile.save()
         return
 
 
