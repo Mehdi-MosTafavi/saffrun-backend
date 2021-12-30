@@ -8,13 +8,13 @@ from django.db import models
 from django.db.models import F
 from django.utils import timezone
 from profile.models import UserProfile
+from profile.serializers import EmployeeProfileSerializer
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .models import Event
-from profile.serializers import EmployeeProfileSerializer
 
 
 class EventSerializer(FlexFieldsModelSerializer):
@@ -112,6 +112,7 @@ class EventDetailImageSerializer(FlexFieldsModelSerializer):
             'id': obj.owner.id,
             'title': obj.owner.user.username
         }
+
     def get_comments(self, obj):
         comments = Comment.objects.filter(event__isnull=False, is_parent=True).filter(event__id=obj.id).order_by(
             '-updated_at').values('id', name=F('user__user__last_name'), date=F('created_at'), text=F('content'))
@@ -188,7 +189,7 @@ class AddImageSerializer(serializers.Serializer):
 
 
 class SpecificEventSerializer(FlexFieldsModelSerializer):
-    image = ImageSerializer(allow_null=True)
+    images = ImageSerializer(many=True)
     owner = serializers.SerializerMethodField(method_name="get_owner")
 
     def get_owner(self, reservation):
@@ -196,12 +197,14 @@ class SpecificEventSerializer(FlexFieldsModelSerializer):
 
     class Meta:
         model = Event
-        fields = ["id", "title", "description", "image", "owner", "price"]
+        fields = ["id", "title", "description", "images", "owner", "price"]
+
 
 class EventHistorySerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField("get_status")
     participant_count = serializers.SerializerMethodField("get_participant_count")
     owner = EmployeeProfileSerializer()
+    images = ImageSerializer(many=True)
 
     @staticmethod
     def get_status(event):
@@ -218,5 +221,5 @@ class EventHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ["id", "owner", "start_datetime", "end_datetime", "price", "status", "participant_count"]
-
+        fields = ["id", 'title', "owner", "images", "start_datetime", "end_datetime", "price", "status",
+                  "participant_count"]
