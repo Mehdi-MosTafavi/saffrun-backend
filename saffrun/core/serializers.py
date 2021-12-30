@@ -3,6 +3,8 @@ from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 
+from .models import Business
+
 
 class ImageSerializer(FlexFieldsModelSerializer):
     image = VersatileImageFieldSerializer(
@@ -66,3 +68,41 @@ class GetAllSerializer(serializers.Serializer):
     page = serializers.IntegerField()
     page_count = serializers.IntegerField()
 
+class UpdateBusinessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Business
+        exclude = ('owner',)
+
+from category.serializers import CategorySerializer
+from profile.serializers import EmployeeProfileSerializer
+
+class GetBusinessSerializer(serializers.ModelSerializer):
+    owner = EmployeeProfileSerializer()
+    category = CategorySerializer()
+    images = ImageSerializer(many=True)
+
+    class Meta:
+        model = Business
+        fields = "__all__"
+
+from comment.serializers import CommentSerializer
+from event.serializers import EventImageSerializer
+
+class BusinessByClientReturnSerializer(GetBusinessSerializer):
+    follower_count = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+    events = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_follower_count(business):
+        return business.owner.followers.count()
+
+    @staticmethod
+    def get_comments(business):
+        serialized_comments = CommentSerializer(business.owner.comment_owner.order_by("-created_at")[:3], many=True)
+        return serialized_comments.data
+
+    @staticmethod
+    def get_events(business):
+        serialized_event = EventImageSerializer(business.owner.owned_event.order_by("start_datetime")[:5], many=True)
+        return serialized_event.data

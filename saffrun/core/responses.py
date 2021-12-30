@@ -22,6 +22,7 @@ class ErrorResponse:
     USER_EMPLOYEE = "The User should be employee"
     INVALID_TYPE = 'type value could only be 1 or 2'
     SERVER_ERROR = "Najva server is not responsible"
+    EMPLOYEE_NOT_FOUND = "Employee not found"
 
 
 

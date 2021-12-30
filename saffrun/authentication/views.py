@@ -11,6 +11,7 @@ from profile.models import EmployeeProfile, UserProfile
 
 from .serializers import RecoverPasswordSerializer
 from .tasks import send_email
+from core.models import Business
 
 
 class RegisterUser(generics.CreateAPIView):
@@ -24,7 +25,7 @@ class RegisterUser(generics.CreateAPIView):
         self.client_type = None
 
     def post(self, request, *args, **kwargs):
-        self.client_type = request.headers.get("Client", None)
+        self.client_type = request.data.get("client", None)
         if self.client_type is None:
             return Response(
                 {"status": "Error", "detail": ErrorResponse.NO_CLIENT_HEADER},
@@ -42,13 +43,19 @@ class RegisterUser(generics.CreateAPIView):
             raise
         user = serializer.create_instance()
         profile = None
+        business = None
         if self.client_type == "web":
             profile = EmployeeProfile(user=user)
+            business = Business(owner=profile)
         elif self.client_type == "app":
             profile = UserProfile(user=user)
+
         with transaction.atomic():
             user.save()
             profile.save()
+            if business:
+                business.save()
+                profile.save()
         return
 
 
