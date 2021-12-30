@@ -3,6 +3,10 @@ from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 
+from .models import Business
+from category.serializers import CategorySerializer
+from profile.serializers import EmployeeProfileSerializer
+
 
 class ImageSerializer(FlexFieldsModelSerializer):
     image = VersatileImageFieldSerializer(
@@ -66,3 +70,16 @@ class GetAllSerializer(serializers.Serializer):
     page = serializers.IntegerField()
     page_count = serializers.IntegerField()
 
+class UpdateBusinessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Business
+        exclude = ('owner',)
+
+class GetBusinessSerializer(serializers.ModelSerializer):
+    owner = EmployeeProfileSerializer()
+    category = CategorySerializer()
+    images = ImageSerializer(many=True)
+
+    class Meta:
+        model = Business
+        fields = "__all__"

@@ -1,9 +1,4 @@
-from versatileimagefield.fields import VersatileImageField, PPOIField
 from django.db import models
-
-from profile.models import EmployeeProfile
-
-from saffrun.category.models import Category
 
 
 class BaseModel(models.Model):
@@ -12,6 +7,8 @@ class BaseModel(models.Model):
     is_active = models.BooleanField(default=True)
     class Meta:
         abstract = True
+
+from versatileimagefield.fields import VersatileImageField, PPOIField
 
 class Image(BaseModel):
     def get_file_path(self, filename):
@@ -27,17 +24,19 @@ class Image(BaseModel):
     image_ppoi = PPOIField(null=True, blank=True)
 
 
+from profile.models import EmployeeProfile
+from category.models import Category
+
 class Business(models.Model):
     owner = models.OneToOneField(EmployeeProfile, on_delete=models.CASCADE, related_name='business')
-    title = models.CharField(max_length=150)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='businesses')
-    establishment_date = models.DateTimeField()
-    worker_count = models.IntegerField()
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=12)
-    full_address = models.TextField()
-    description = models.TextField()
-    images = models.ManyToManyField(Image, related_name="businesses", blank=True)
-
-    def __str__(self):
-        return self.title
+    title = models.CharField(max_length=150, null=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='businesses', null=True)
+    establishment_date = models.DateTimeField(null=True)
+    worker_count = models.IntegerField(null=True)
+    email = models.EmailField(null=True)
+    phone_number = models.CharField(max_length=12, null=True)
+    full_address = models.TextField(null=True)
+    description = models.TextField(null=True)
+    images = models.ManyToManyField(Image, related_name="businesses", blank=True, null=True)
+    rate = models.FloatField(null=True)
+    rate_count = models.IntegerField(null=True)

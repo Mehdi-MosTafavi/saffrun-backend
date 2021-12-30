@@ -11,10 +11,12 @@ from rest_flex_fields import FlexFieldsModelViewSet
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveUpdateAPIView
 
-from .models import Image
+from .models import Image, Business
 from .responses import ErrorResponse
-from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient
+from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, \
+    GetBusinessSerializer, UpdateBusinessSerializer
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -172,3 +174,12 @@ class HomePageClient(generics.RetrieveAPIView):
                        "validation_errors": serializer.errors},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+class BusinessView(RetrieveUpdateAPIView):
+    queryset = Business.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return GetBusinessSerializer
+        return UpdateBusinessSerializer

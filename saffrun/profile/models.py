@@ -54,7 +54,8 @@ class EmployeeProfile(ProfileBase):
     level = models.IntegerField(
         choices=LevelChoice.choices, default=LevelChoice.NORMAL
     )
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_employee')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True,
+                                 related_name='category_employee')
 
     def __str__(self):
         return self.user.username

@@ -1,13 +1,21 @@
 from django.contrib.auth.models import User
+from django.db import models
 from rest_framework import serializers
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    class ClientChoices(models.TextChoices):
+        APP = "app"
+        WEB = "web"
+
+    client = serializers.ChoiceField(ClientChoices, allow_blank=False, allow_null=False)
+
     class Meta:
         model = User
         fields = [
             "username",
             "password",
+            "client"
         ]
 
     extra_kwargs = {
