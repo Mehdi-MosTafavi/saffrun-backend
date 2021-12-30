@@ -80,7 +80,10 @@ class UserView(APIView):
             profile.address = self.request.data["address"]
             profile.gender = self.request.data["gender"]
             if "image_id" in self.request.data:
-                profile.avatar = get_object_or_404(Image, id=self.request.data["image_id"])
+                if self.request.data["image_id"] == '-1':
+                    profile.avatar = None
+                else:
+                    profile.avatar = get_object_or_404(Image, id=self.request.data["image_id"])
             with transaction.atomic():
                 user.save()
                 profile.save()
