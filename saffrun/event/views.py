@@ -4,7 +4,7 @@ from core.services import is_user_employee, is_user_client
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -17,9 +17,10 @@ from .serializers import (
     ManyEventSerializer,
     AddParticipantSerializer,
     AddImageSerializer,
-    EventImageSerializer, EventDetailImageSerializer, EventHistorySerializer,
+    EventImageSerializer, EventDetailImageSerializer, EventHistorySerializer, RemoveParticipantsSerializer,
 )
 from .utils import get_sorted_events, create_an_event, get_event_history_client, get_sorted_events_client
+from profile.models import EmployeeProfile, UserProfile
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -176,3 +177,36 @@ class ClientEventHistory(APIView):
         page_count = events_serializer.validated_data.get("page_count")
         events = get_event_history_client(request.user.user_profile, page, page_count, request)
         return Response({"reserves": EventHistorySerializer(events, many=True).data}, status=200)
+@swagger_auto_schema(
+    method="DELETE",
+    request_body=RemoveParticipantsSerializer,
+    responses={
+        201: SuccessResponse.DELETED,
+        406: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["DELETE"])
+def remove_participant(request):
+    participant_remove_serializer = RemoveParticipantsSerializer(data=request.data)
+    if not participant_remove_serializer.is_valid():
+        return Response(
+            {"Error": ErrorResponse.INVALID_DATA},
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    employee = get_object_or_404(EmployeeProfile, user=request.user)
+    event = get_object_or_404(Event,id=participant_remove_serializer.validated_data['event_id'])
+    if event.owner != employee:
+        return Response(
+            {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    user = get_object_or_404(UserProfile, id=participant_remove_serializer.validated_data['user_id'])
+    if user in event.participants.all():
+        event.participants.remove(user)
+        return Response(
+            {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
+        )
+    return Response(
+        {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
+        status=status.HTTP_400_BAD_REQUEST,
+    )
