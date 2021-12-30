@@ -21,7 +21,7 @@ from .utils import remove_follower_user
 class UserView(APIView):
     permission_classes = (AllowAny, IsAuthenticated)
 
-    def get_profile(self):
+    def _get_profile(self):
         try:
             profile = EmployeeProfile.objects.get(user=self.request.user)
         except:
@@ -35,7 +35,7 @@ class UserView(APIView):
 
     def get(self, request):
         try:
-            profile = self.get_profile()
+            profile = self._get_profile()
         except KeyError as err:
             return Response(
                 {"status": "Error", "detail": ErrorResponse.NOT_PROFILE_FOUND},
