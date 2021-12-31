@@ -18,9 +18,9 @@ from .models import Image, Business
 from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, \
     GetBusinessSerializer, UpdateBusinessSerializer, BusinessByClientReturnSerializer, EventReserveSerializer, \
-    GetYearlyDetailSerializer
+    GetYearlyDetailSerializer, RateBusinessPostSerializer, RateBusinessReturnSerializer
 from .services import is_user_client, is_user_employee
-from .utils import get_yearly_details
+from .utils import get_yearly_details, rate_employee
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -259,3 +259,29 @@ class GetYearlyDetails(APIView):
         event_reserve_result = get_yearly_details(request.user.employee_profile,
                                                   year_serializer.validated_data.get("year"))
         return Response({"result": event_reserve_result}, status=200)
+
+class RateBusiness(APIView):
+    @swagger_auto_schema(
+        request_body=RateBusinessPostSerializer,
+        responses={
+            status.HTTP_200_OK: RateBusinessReturnSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
+            status.HTTP_404_NOT_FOUND: ErrorResponse.EMPLOYEE_NOT_FOUND,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA
+        }
+    )
+    def post(self, request):
+        rate_serializer = RateBusinessPostSerializer(data=request.data)
+        if not rate_serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if not is_user_client(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        employee_id = rate_serializer.validated_data.get("employee_id")
+        rate = rate_serializer.validated_data.get("rate")
+        return rate_employee(employee_id, rate)
