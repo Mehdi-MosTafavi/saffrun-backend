@@ -1,5 +1,4 @@
 from django.db.models import Q, Count, Sum
-from django.utils import timezone
 
 from event.models import Event
 from profile.models import EmployeeProfile
@@ -37,11 +36,11 @@ def get_reserve_participant_count(employee:EmployeeProfile, year:int, month:int)
 def get_yearly_details(employee: EmployeeProfile, year:int) -> list:
     result_list = []
     for month in range(12):
-        event_count = get_event_participant_count(employee, year, month)
-        reserve_count = get_reserve_participant_count(employee, year, month)
+        event_count = get_event_participant_count(employee, year, month + 1)
+        reserve_count = get_reserve_participant_count(employee, year, month + 1)
         result_list.append({
             "event": event_count,
-            "reserve":reserve_count
+            "reserve": reserve_count
         })
     return result_list
 

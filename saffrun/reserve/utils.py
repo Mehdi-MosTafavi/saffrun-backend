@@ -10,7 +10,6 @@ from rest_framework.request import Request
 from .models import Reservation
 
 
-
 def check_collision(wanted_start, wanted_end, owner):
     is_owner = Q(owner=owner)
     right_collision = Q(start_datetime__gt=wanted_start) & Q(
@@ -196,7 +195,7 @@ def create_reserve_objects(
 
 def get_nearest_free_reserve(admin_id):
     try:
-        admin = EmployeeProfile.objects.get(user=admin_id)
+        admin = EmployeeProfile.objects.get(id=admin_id)
         reserves = (
             Reservation.objects.filter(
                 owner=admin, start_datetime__gte=timezone.datetime.now()
@@ -213,7 +212,7 @@ def get_nearest_free_reserve(admin_id):
 
 
 def get_next_n_days_free_reserves(admin_id, days):
-    admin = EmployeeProfile.objects.get(user=admin_id)
+    admin = EmployeeProfile.objects.get(id=admin_id)
     today_date = timezone.datetime.now().date()
     reserves = (
         Reservation.objects.filter(
@@ -247,7 +246,7 @@ def reserve_it(user, reserve_id):
 
 def get_reserve_abstract_dictionary(reserve):
     return (
-        {"reserve_id": reserve.id, "datetime": reserve.get_start_datetime()}
+        {"reserve_id": reserve.id, "datetime": reserve.get_start_datetime(), "price": reserve.price}
         if reserve
         else ""
     )
