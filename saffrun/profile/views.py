@@ -51,10 +51,6 @@ class UserView(APIView):
                 "country": profile.country,
                 "province": profile.province,
                 "gender": profile.gender,
-                "category": {
-                    'id': profile.category.id,
-                    'title': profile.category.name
-                } if isinstance(profile, EmployeeProfile) else {},
                 "address": profile.address,
                 "avatar": ImageAvatarSerializer(instance=profile.avatar).data
             }
