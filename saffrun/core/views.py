@@ -9,9 +9,9 @@ from profile.models import EmployeeProfile, UserProfile
 from reserve.models import Reservation
 from rest_flex_fields import FlexFieldsModelViewSet
 from rest_framework import generics, status
+from rest_framework.generics import RetrieveUpdateAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveUpdateAPIView, get_object_or_404
 from rest_framework.views import APIView
 
 from .models import Image, Business
@@ -231,7 +231,7 @@ class GetBusinessClientView(APIView):
                 {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        business_serializer = BusinessByClientReturnSerializer(employee.business)
+        business_serializer = BusinessByClientReturnSerializer(employee.business, context={'request': request})
         return Response(business_serializer.data, status=200)
 
 

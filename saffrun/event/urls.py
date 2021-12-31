@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import RetrieveEventAPIView
+from .views import RetrieveEventAPIView, remove_participant
 
 app_name = "event"
 urlpatterns = [
@@ -27,5 +27,10 @@ urlpatterns = [
         'get-client-reserve-history',
         views.ClientEventHistory.as_view(),
         name='client-reserve-history'
+    ),
+    path(
+        'remove-participant-event',
+        remove_participant,
+        name='remove-particpant-event'
     )
 ]

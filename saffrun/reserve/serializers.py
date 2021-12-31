@@ -143,7 +143,10 @@ class ReserveSerializer(serializers.ModelSerializer):
     end_time = serializers.SerializerMethodField(method_name="get_end_time")
 
     def get_owner(self, reservation):
-        return ShortUserSerializer(instance=reservation.owner.user).data
+        return {
+            "id" : reservation.owner.id,
+            "username" : reservation.owner.user.username
+        }
 
     def get_start_time(self, reservation):
         return reservation.get_start_datetime().time()
