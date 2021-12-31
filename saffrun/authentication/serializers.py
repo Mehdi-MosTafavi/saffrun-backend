@@ -36,3 +36,8 @@ class ShortUserSerializer(serializers.ModelSerializer):
 
 class RecoverPasswordSerializer(serializers.Serializer):
     username = serializers.CharField()
+
+class ChangePasswordSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()
