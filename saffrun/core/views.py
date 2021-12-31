@@ -17,8 +17,10 @@ from rest_framework.views import APIView
 from .models import Image, Business
 from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, \
-    GetBusinessSerializer, UpdateBusinessSerializer, BusinessByClientReturnSerializer
+    GetBusinessSerializer, UpdateBusinessSerializer, BusinessByClientReturnSerializer, EventReserveSerializer, \
+    GetYearlyDetailSerializer
 from .services import is_user_client, is_user_employee
+from .utils import get_yearly_details
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -231,3 +233,29 @@ class GetBusinessClientView(APIView):
             )
         business_serializer = BusinessByClientReturnSerializer(employee.business, context={'request': request})
         return Response(business_serializer.data, status=200)
+
+
+class GetYearlyDetails(APIView):
+    @swagger_auto_schema(
+        query_serializer=GetYearlyDetailSerializer,
+        responses={
+            status.HTTP_200_OK: EventReserveSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_EMPLOYEE,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA
+        }
+    )
+    def get(self, request):
+        year_serializer = GetYearlyDetailSerializer(data=request.GET)
+        if not year_serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if not is_user_employee(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+                status=400,
+            )
+        event_reserve_result = get_yearly_details(request.user.employee_profile,
+                                                  year_serializer.validated_data.get("year"))
+        return Response({"result": event_reserve_result}, status=200)

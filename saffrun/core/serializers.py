@@ -118,3 +118,10 @@ class BusinessByClientReturnSerializer(GetBusinessSerializer):
     def get_events(business):
         serialized_event = EventImageSerializer(business.owner.owned_event.order_by("start_datetime")[:5], many=True)
         return serialized_event.data
+
+class GetYearlyDetailSerializer(serializers.Serializer):
+    year = serializers.IntegerField(allow_null=True, default=timezone.now().year)
+
+class EventReserveSerializer(serializers.Serializer):
+    event = serializers.IntegerField()
+    reserve = serializers.IntegerField()
