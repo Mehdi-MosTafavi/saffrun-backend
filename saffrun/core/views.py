@@ -17,8 +17,10 @@ from rest_framework.views import APIView
 from .models import Image, Business
 from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, \
-    GetBusinessSerializer, UpdateBusinessSerializer, BusinessByClientReturnSerializer
+    GetBusinessSerializer, UpdateBusinessSerializer, BusinessByClientReturnSerializer, EventReserveSerializer, \
+    GetYearlyDetailSerializer
 from .services import is_user_client, is_user_employee
+from .utils import get_yearly_details
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -52,42 +54,42 @@ class HomePage(generics.RetrieveAPIView):
         self.profile = self._get_profile()
         serializer = HomepageResponse(
             data={
-                'image' : ImageSerializer(self.profile.avatar).data,
+                'image': ImageSerializer(self.profile.avatar).data,
                 'first_name': self.profile.user.first_name,
-                  'last_name': self.profile.user.last_name,
-                  'followers': self.profile.followers.count(),
-                  'number_of_events': Event.objects.filter(owner=self.profile).count(),
-                  'number_of_active_events': Event.objects.filter(owner=self.profile,
-                                                                  end_datetime__gte=timezone.now()).count(),
-                  'monthly_events': Event.objects.filter(owner=self.profile).annotate(
-                      month=TruncMonth('end_datetime'),
-                      total=Count(
-                          'participants')).values('month', 'total').order_by(
-                      'month').distinct(),
-                  'last_events': Event.objects.filter(owner=self.profile).order_by(
-                      '-id').annotate(participant_count=Count('participants')).values('title',
-                                                                                      'start_datetime',
-                                                                                      'end_datetime',
-                                                                                      'participant_count',
-                                                                                      province=F('owner__province')),
-                  'number_of_comments': Comment.objects.filter(owner=self.profile).count(),
-                  'number_of_user_comments': Comment.objects.filter(owner=self.profile, is_parent=True).values(
-                      'user').distinct().count(),
-                  'rate': 4.5,
-                  'number_user_rate': 10,
-                  'last_comments': Comment.objects.filter(owner=self.profile).order_by(
-                      '-id').annotate(
-                      username=F('user__user__username')).values('username',
-                                                                 'content',
-                                                                 'created_at')[:3],
-                  'number_of_all_reserves': Reservation.objects.filter(owner=self.profile).count(),
-                  'number_of_given_reserves': Reservation.objects.filter(
-                      owner=self.profile, participants__isnull=False).count(),
-                  'last_given_reserves': self.get_reserve_of_user(),
-                  'monthly_reserves': Reservation.objects.annotate(
-                      month=TruncMonth('end_datetime'), total=Count('participants')).values(
-                      'month', 'total').order_by('month').distinct(),
-                  })
+                'last_name': self.profile.user.last_name,
+                'followers': self.profile.followers.count(),
+                'number_of_events': Event.objects.filter(owner=self.profile).count(),
+                'number_of_active_events': Event.objects.filter(owner=self.profile,
+                                                                end_datetime__gte=timezone.now()).count(),
+                'monthly_events': Event.objects.filter(owner=self.profile).annotate(
+                    month=TruncMonth('end_datetime'),
+                    total=Count(
+                        'participants')).values('month', 'total').order_by(
+                    'month').distinct(),
+                'last_events': Event.objects.filter(owner=self.profile).order_by(
+                    '-id').annotate(participant_count=Count('participants')).values('title',
+                                                                                    'start_datetime',
+                                                                                    'end_datetime',
+                                                                                    'participant_count',
+                                                                                    province=F('owner__province')),
+                'number_of_comments': Comment.objects.filter(owner=self.profile).count(),
+                'number_of_user_comments': Comment.objects.filter(owner=self.profile, is_parent=True).values(
+                    'user').distinct().count(),
+                'rate': 4.5,
+                'number_user_rate': 10,
+                'last_comments': Comment.objects.filter(owner=self.profile).order_by(
+                    '-id').annotate(
+                    username=F('user__user__username')).values('username',
+                                                               'content',
+                                                               'created_at')[:3],
+                'number_of_all_reserves': Reservation.objects.filter(owner=self.profile).count(),
+                'number_of_given_reserves': Reservation.objects.filter(
+                    owner=self.profile, participants__isnull=False).count(),
+                'last_given_reserves': self.get_reserve_of_user(),
+                'monthly_reserves': Reservation.objects.annotate(
+                    month=TruncMonth('end_datetime'), total=Count('participants')).values(
+                    'month', 'total').order_by('month').distinct(),
+            })
         if serializer.is_valid():
             return Response(serializer.data)
         return Response(
@@ -213,6 +215,7 @@ class BusinessView(RetrieveUpdateAPIView):
             )
         return super().partial_update(request, *args, **kwargs)
 
+
 class GetBusinessClientView(APIView):
     @swagger_auto_schema(
         responses={
@@ -230,3 +233,29 @@ class GetBusinessClientView(APIView):
             )
         business_serializer = BusinessByClientReturnSerializer(employee.business)
         return Response(business_serializer.data, status=200)
+
+
+class GetYearlyDetails(APIView):
+    @swagger_auto_schema(
+        query_serializer=GetYearlyDetailSerializer,
+        responses={
+            status.HTTP_200_OK: EventReserveSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_EMPLOYEE,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA
+        }
+    )
+    def get(self, request):
+        year_serializer = GetYearlyDetailSerializer(data=request.GET)
+        if not year_serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if not is_user_employee(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+                status=400,
+            )
+        event_reserve_result = get_yearly_details(request.user.employee_profile,
+                                                  year_serializer.validated_data.get("year"))
+        return Response({"result": event_reserve_result}, status=200)
