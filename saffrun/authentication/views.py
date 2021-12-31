@@ -1,6 +1,6 @@
 from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework import generics, status
 from authentication.serializers import (
     RegisterSerializer,

@@ -10,6 +10,6 @@ class Invoice(BaseModel):
     debtor = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING)
     owner = models.ForeignKey(EmployeeProfile, on_delete=models.DO_NOTHING)
     token = models.CharField(max_length=12)
-    reference_number = models.CharField(max_length=24)
+    reference_code = models.CharField(max_length=24)
     amount = models.IntegerField(validators=[MinValueValidator(0)])
     filters = models.JSONField()
