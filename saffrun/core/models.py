@@ -38,5 +38,5 @@ class Business(models.Model):
     full_address = models.TextField(null=True)
     description = models.TextField(null=True)
     images = models.ManyToManyField(Image, related_name="businesses", blank=True)
-    rate = models.FloatField(null=True)
-    rate_count = models.IntegerField(null=True)
+    rate = models.FloatField(null=False, default=0)
+    rate_count = models.IntegerField(null=False, default=0)

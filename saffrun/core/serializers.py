@@ -126,3 +126,10 @@ class GetYearlyDetailSerializer(serializers.Serializer):
 class EventReserveSerializer(serializers.Serializer):
     event = serializers.IntegerField()
     reserve = serializers.IntegerField()
+
+class RateBusinessPostSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField()
+    rate = serializers.FloatField()
+
+class RateBusinessReturnSerializer(serializers.Serializer):
+    new_rate = serializers.IntegerField()
