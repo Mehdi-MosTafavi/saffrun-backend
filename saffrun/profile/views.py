@@ -26,15 +26,12 @@ class UserView(APIView):
 
     def _get_profile(self):
         try:
-            profile = EmployeeProfile.objects.get(user=self.request.user)
-        except:
+            return EmployeeProfile.objects.get(user=self.request.user)
+        except EmployeeProfile.DoesNotExist:
             try:
-                profile = UserProfile.objects.get(user=self.request.user)
-            except:
-                profile = None
-        if profile is None:
-            raise Exception('No profile Found!')
-        return profile
+                return UserProfile.objects.get(user=self.request.user)
+            except UserProfile.DoesNotExist:
+                raise Exception('No profile Found!')
 
     def get(self, request):
         try:

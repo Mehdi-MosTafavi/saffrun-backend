@@ -12,5 +12,12 @@ class PayInvoiceSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         debtor_id = get_object_or_404(UserProfile, user=self.context['request'].user.id)
-        return Invoice.objects.create(debtor=debtor_id, **self.validated_data, token='S' + random_string_generator(11), reference_code=random_string_generator(24))
+        return Invoice.objects.create(debtor=debtor_id, **self.validated_data, token='S' + random_string_generator(11),
+                                      reference_code=random_string_generator(24))
+
+
+class ListInvoice(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = ('id', 'amount', 'owner', 'debtor')
 

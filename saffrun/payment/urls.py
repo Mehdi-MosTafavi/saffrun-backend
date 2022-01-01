@@ -4,5 +4,9 @@ from . import views
 app_name = 'payment'
 
 urlpatterns = [
-    path('invoice/', views.Payment.as_view(), name='add_payment')
+    path('', views.Payment.as_view(), name="payment"),
+    path('event/', views.Payment.as_view(mode="event"), name="payment_event"),
+    path('reserve/', views.Payment.as_view(mode="reserve"), name="payment_reserve"),
+    path('event/<int:mode_id>/', views.Payment.as_view(mode="event"), name="payment_get_reserve"),
+    path('reserve/<int:mode_id>/', views.Payment.as_view(mode="reserve"), name="payment_get_reserve"),
 ]
