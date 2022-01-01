@@ -1,6 +1,9 @@
 from category.serializers import CategorySerializer
 from comment.serializers import CommentSerializer
+from core.serializers import ImageAvatarSerializer
 from core.serializers import ImageSerializer
+from event.models import Event
+from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
 
 from .models import UserProfile, Business
@@ -69,3 +72,47 @@ class BusinessByClientReturnSerializer(GetBusinessSerializer):
     def get_events(business):
         serialized_event = EventImageSerializer(business.owner.owned_event.order_by("start_datetime")[:5], many=True)
         return serialized_event.data
+
+
+class EventImageSerializer(FlexFieldsModelSerializer):
+    images = ImageSerializer(many=True)
+    participants = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = [
+            'id',
+            "title",
+            "description",
+            "discount",
+            "owner",
+            'participants',
+            "start_datetime",
+            "end_datetime",
+            "category",
+            "images",
+        ]
+
+    def get_category(self, obj):
+        return {
+            'id': obj.category.id,
+            'title': obj.category.name
+        }
+
+    def get_owner(self, obj):
+        return {
+            'id': obj.owner.id,
+            'title': obj.owner.user.username
+        }
+
+    def get_participants(self, obj):
+        particpiants_list = []
+        for participant in obj.participants.all():
+            particpiants_list.append({
+                'id': participant.id,
+                'name': participant.user.username,
+                'image': ImageAvatarSerializer(instance=participant.avatar).data
+            })
+        return particpiants_list

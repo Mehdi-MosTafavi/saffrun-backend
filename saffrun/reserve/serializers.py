@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
-from authentication.serializers import ShortUserSerializer
 from core.responses import ErrorResponse
 from core.serializers import ImageAvatarSerializer
+from core.serializers import ImageSerializer
 from django.utils import timezone
 from event.serializers import SpecificEventSerializer
 from profile.serializers import EmployeeProfileSerializer
@@ -10,9 +10,6 @@ from rest_framework import serializers
 
 from .models import Reservation
 from .utils import check_collision, create_reserve_objects
-
-from core.serializers import ImageSerializer
-
 
 
 class ReservePeriodSerializer(serializers.Serializer):
@@ -143,7 +140,10 @@ class ReserveSerializer(serializers.ModelSerializer):
     end_time = serializers.SerializerMethodField(method_name="get_end_time")
 
     def get_owner(self, reservation):
-        return ShortUserSerializer(instance=reservation.owner.user).data
+        return {
+            "id": reservation.owner.id,
+            "username": reservation.owner.user.get_full_name()
+        }
 
     def get_start_time(self, reservation):
         return reservation.get_start_datetime().time()
@@ -236,6 +236,7 @@ class ReserveHistorySerializer(serializers.ModelSerializer):
         model = Reservation
         fields = ["id", "owner", "image", "start_datetime", "end_datetime", "price", "status"]
 
+
 class ReserveDetailSerializer(serializers.Serializer):
     date = serializers.DateField()
     number_of_reservation = serializers.IntegerField()
@@ -251,12 +252,13 @@ class ReserveDetailSerializer(serializers.Serializer):
 class ReserveRemoveSerializer(serializers.Serializer):
     reserve_id = serializers.IntegerField()
 
+
 class ReserveDetailAllReservation(serializers.Serializer):
     page = serializers.IntegerField()
     page_count = serializers.IntegerField()
     date = serializers.DateField()
 
+
 class ReserveDetailAllReservationResponseSerializer(serializers.Serializer):
     pages = serializers.IntegerField()
     reserves = serializers.ListField(child=serializers.DictField())
-
