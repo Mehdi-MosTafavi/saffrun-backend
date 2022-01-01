@@ -2,6 +2,7 @@ from math import ceil
 
 from core.responses import ErrorResponse
 from core.serializers import GetAllSerializer
+from core.services import is_user_client
 from core.services import is_user_employee
 from drf_yasg.utils import swagger_auto_schema
 from profile.models import EmployeeProfile, UserProfile
@@ -13,7 +14,7 @@ from rest_framework.response import Response
 
 from .models import Invoice
 from .serializers import PayInvoiceSerializer, ListInvoice, ManyPaymentSerializer
-from .utils import get_payments_of_employee
+from .utils import get_payments_of_employee, get_payments_of_user
 
 
 class Payment(generics.ListCreateAPIView):
@@ -89,3 +90,27 @@ def get_all_payments(request):
             serializer_result.data,
             status=status.HTTP_200_OK,
         )
+
+
+@swagger_auto_schema(
+    method="get",
+    responses={406: ErrorResponse.INVALID_DATA, 400: ErrorResponse.USER_EMPLOYEE},
+)
+@api_view(["GET"])
+def get_all_payments_user(request):
+    if is_user_client(request.user):
+        payments_serializer = get_payments_of_user(request)
+        if not payments_serializer.is_valid():
+            print(payments_serializer.errors)
+            return Response(
+                {"Error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        return Response(
+            payments_serializer.data,
+            status=status.HTTP_200_OK,
+        )
+    return Response(
+        {"Error": ErrorResponse.INVALID_DATA},
+        status=status.HTTP_406_NOT_ACCEPTABLE,
+    )
