@@ -1,3 +1,5 @@
+from math import ceil
+
 from core.responses import ErrorResponse, SuccessResponse
 from core.serializers import GetAllSerializer
 from core.services import is_user_employee, is_user_client
@@ -86,13 +88,14 @@ def get_all_events(request):
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
     if is_user_employee(request.user):
-        events = get_sorted_events(events_serializer, request.user.employee_profile)
+        events_query = get_sorted_events(events_serializer, request.user.employee_profile)
         paginator = PageNumberPagination()
         paginator.page_size = events_serializer.validated_data["page_count"]
         paginator.page = events_serializer.validated_data["page"]
-        events = paginator.paginate_queryset(events, request)
+        events = paginator.paginate_queryset(events_query, request)
         return Response(
-            {"events": EventImageSerializer(instance=events, many=True).data},
+            {"pages": ceil(events_query.count() / events_serializer.validated_data["page_count"]),
+             "events": EventImageSerializer(instance=events, many=True).data},
             status=status.HTTP_200_OK,
         )
     elif is_user_client(request.user):
