@@ -1,11 +1,19 @@
-from rest_framework import generics
+from math import ceil
+
+from core.responses import ErrorResponse
+from core.serializers import GetAllSerializer
+from core.services import is_user_employee
+from drf_yasg.utils import swagger_auto_schema
+from profile.models import EmployeeProfile, UserProfile
+from rest_framework import generics, status
 # Create your views here.
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import PayInvoiceSerializer, ListInvoice
-from profile.models import EmployeeProfile, UserProfile
 from .models import Invoice
+from .serializers import PayInvoiceSerializer, ListInvoice, ManyPaymentSerializer
+from .utils import get_payments_of_employee
 
 
 class Payment(generics.ListCreateAPIView):
@@ -52,3 +60,32 @@ class Payment(generics.ListCreateAPIView):
         serializer = self.get_serializer_class()
         response = serializer(queryset, many=True)
         return Response(response.data)
+
+
+@swagger_auto_schema(
+    method="get",
+    query_serializer=GetAllSerializer,
+    responses={406: ErrorResponse.INVALID_DATA, 400: ErrorResponse.USER_EMPLOYEE},
+)
+@api_view(["GET"])
+def get_all_payments(request):
+    payment_serializer = GetAllSerializer(data=request.GET)
+    if not payment_serializer.is_valid():
+        return Response(
+            {"Error": ErrorResponse.INVALID_DATA},
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    if is_user_employee(request.user):
+        payments, payments_count = get_payments_of_employee(payment_serializer, request)
+        serializer_result = ManyPaymentSerializer(
+            data={"pages": ceil(payments_count / payment_serializer.validated_data['page_count']), "payments": payments}
+        )
+        if not serializer_result.is_valid():
+            return Response(
+                {"Error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        return Response(
+            serializer_result.data,
+            status=status.HTTP_200_OK,
+        )

@@ -1,8 +1,9 @@
+from profile.models import UserProfile
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from .utils import random_string_generator
+
 from .models import Invoice
-from profile.models import UserProfile
+from .utils import random_string_generator
 
 
 class PayInvoiceSerializer(serializers.ModelSerializer):
@@ -21,3 +22,7 @@ class ListInvoice(serializers.ModelSerializer):
         model = Invoice
         fields = ('id', 'amount', 'owner', 'debtor')
 
+
+class ManyPaymentSerializer(serializers.Serializer):
+    pages = serializers.IntegerField()
+    payments = serializers.ListField(min_length=0, child=serializers.DictField())
