@@ -1,18 +1,17 @@
-from django.db import transaction
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import generics, status
 from authentication.serializers import (
     RegisterSerializer,
 )
-from rest_framework.response import Response
+from core.models import Business
 from core.responses import ErrorResponse, SuccessResponse
+from django.db import transaction
+from drf_yasg.utils import swagger_auto_schema
 from profile.models import EmployeeProfile, UserProfile
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 from .serializers import RecoverPasswordSerializer, ChangePasswordSerializer
 from .tasks import send_email
-from core.models import Business
-
 from .utils import change_password
 
 
@@ -82,6 +81,7 @@ class ForgotPassword(generics.GenericAPIView):
             return Response()
         return Response()
 
+
 class ChangePassword(generics.GenericAPIView):
     permission_classes = (AllowAny,)
 
@@ -99,7 +99,6 @@ class ChangePassword(generics.GenericAPIView):
                 exception={"error": ErrorResponse.INVALID_DATA},
                 status=status.HTTP_406_NOT_ACCEPTABLE,
             )
-        username = change_password_serializer.validated_data.get("username")
         old_password = change_password_serializer.validated_data.get("old_password")
         new_password = change_password_serializer.validated_data.get("new_password")
-        return change_password(username, old_password, new_password)
+        return change_password(request.user, old_password, new_password)
