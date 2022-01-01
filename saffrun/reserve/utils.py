@@ -61,12 +61,14 @@ def get_a_day_data_for_future(date, owner):
     day_dic.update({"next_reserve": time})
     return day_dic
 
+
 def is_today_have_future_reserve(owner):
     return True if Reservation.objects.filter(
         start_datetime__date=timezone.datetime.now().date(),
         owner=owner,
         start_datetime__gte=timezone.datetime.now()
     ).count() > 0 else False
+
 
 def get_details_past(dates, **kwargs):
     final_list = []
@@ -128,7 +130,7 @@ def get_paginated_future_reservation_result(reserves_serializer, request):
     paginated_future = paginator.paginate_queryset(future_reserves, request)
     return get_details_future(
         paginated_future, owner=request.user.employee_profile
-    )
+    ), future_reserves.count()
 
 
 def get_user_busy_dates_list(user):
@@ -270,6 +272,7 @@ def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
         participant_count__gte=0
     )
     return reserve_list[:5]
+
 
 def get_reserve_history_client(client: UserProfile, page: int, page_count: int, request: Request):
     paginator = PageNumberPagination()

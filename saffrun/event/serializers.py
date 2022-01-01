@@ -53,6 +53,7 @@ class EventImageSerializer(FlexFieldsModelSerializer):
             "end_datetime",
             "category",
             "images",
+            'price'
         ]
 
     def get_category(self, obj):
