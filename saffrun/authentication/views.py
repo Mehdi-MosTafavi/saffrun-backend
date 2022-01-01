@@ -1,17 +1,17 @@
-from django.db import transaction
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework.permissions import AllowAny
-from rest_framework import generics, status
 from authentication.serializers import (
     RegisterSerializer,
 )
-from rest_framework.response import Response
 from core.responses import ErrorResponse
+from django.db import transaction
+from drf_yasg.utils import swagger_auto_schema
+from profile.models import Business
 from profile.models import EmployeeProfile, UserProfile
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 from .serializers import RecoverPasswordSerializer
 from .tasks import send_email
-from core.models import Business
 
 
 class RegisterUser(generics.CreateAPIView):

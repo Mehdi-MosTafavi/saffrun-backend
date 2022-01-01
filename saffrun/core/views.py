@@ -11,14 +11,10 @@ from rest_flex_fields import FlexFieldsModelViewSet
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveUpdateAPIView, get_object_or_404
-from rest_framework.views import APIView
 
-from .models import Image, Business
+from .models import Image
 from .responses import ErrorResponse
-from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, \
-    GetBusinessSerializer, UpdateBusinessSerializer, BusinessByClientReturnSerializer
-from .services import is_user_client, is_user_employee
+from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -178,55 +174,3 @@ class HomePageClient(generics.RetrieveAPIView):
         )
 
 
-class BusinessView(RetrieveUpdateAPIView):
-    queryset = Business.objects.all()
-
-    def get_object(self):
-        return self.request.user.employee_profile.business
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return GetBusinessSerializer
-        return UpdateBusinessSerializer
-
-    def get(self, request, *args, **kwargs):
-        if not is_user_employee(request.user):
-            return Response(
-                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
-                status=400,
-            )
-        return super().retrieve(request, *args, **kwargs)
-
-    def put(self, request, *args, **kwargs):
-        if not is_user_employee(request.user):
-            return Response(
-                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
-                status=400,
-            )
-        return super().update(request, *args, **kwargs)
-
-    def patch(self, request, *args, **kwargs):
-        if not is_user_employee(request.user):
-            return Response(
-                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
-                status=400,
-            )
-        return super().partial_update(request, *args, **kwargs)
-
-class GetBusinessClientView(APIView):
-    @swagger_auto_schema(
-        responses={
-            status.HTTP_200_OK: BusinessByClientReturnSerializer,
-            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
-            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
-        }
-    )
-    def get(self, request, employee_id):
-        employee = get_object_or_404(EmployeeProfile, pk=employee_id)
-        if not is_user_client(request.user):
-            return Response(
-                {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        business_serializer = BusinessByClientReturnSerializer(employee.business)
-        return Response(business_serializer.data, status=200)

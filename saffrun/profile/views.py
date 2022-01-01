@@ -3,18 +3,21 @@ from core.responses import ErrorResponse
 # Create your views here.
 from core.responses import SuccessResponse
 from core.serializers import ImageAvatarSerializer
+from core.services import is_user_client, is_user_employee
 from django.db import transaction
 from django.db.models import F
 from drf_yasg.utils import swagger_auto_schema
 from profile.models import EmployeeProfile, UserProfile
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.generics import get_object_or_404, GenericAPIView
+from rest_framework.generics import get_object_or_404, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import FollowSerializer, RemoveFollowerSerializer
+from .models import Business
+from .serializers import FollowSerializer, RemoveFollowerSerializer, BusinessByClientReturnSerializer, \
+    GetBusinessSerializer, UpdateBusinessSerializer
 from .utils import remove_follower_user
 
 
@@ -174,3 +177,58 @@ def remove_follower(request):
         {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
         status=status.HTTP_400_BAD_REQUEST,
     )
+
+
+class BusinessView(RetrieveUpdateAPIView):
+    queryset = Business.objects.all()
+
+    def get_object(self):
+        return self.request.user.employee_profile.business
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return GetBusinessSerializer
+        return UpdateBusinessSerializer
+
+    def get(self, request, *args, **kwargs):
+        if not is_user_employee(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+                status=400,
+            )
+        return super().retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        if not is_user_employee(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+                status=400,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        if not is_user_employee(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+                status=400,
+            )
+        return super().partial_update(request, *args, **kwargs)
+
+
+class GetBusinessClientView(APIView):
+    @swagger_auto_schema(
+        responses={
+            status.HTTP_200_OK: BusinessByClientReturnSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+        }
+    )
+    def get(self, request, employee_id):
+        employee = get_object_or_404(EmployeeProfile, pk=employee_id)
+        if not is_user_client(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        business_serializer = BusinessByClientReturnSerializer(employee.business)
+        return Response(business_serializer.data, status=200)

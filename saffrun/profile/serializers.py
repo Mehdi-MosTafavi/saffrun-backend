@@ -1,6 +1,9 @@
+from category.serializers import CategorySerializer
+from comment.serializers import CommentSerializer
+from core.serializers import ImageSerializer
 from rest_framework import serializers
 
-from .models import UserProfile
+from .models import UserProfile, Business
 
 
 class FollowSerializer(serializers.Serializer):
@@ -31,3 +34,38 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
 class RemoveFollowerSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
 
+
+class UpdateBusinessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Business
+        exclude = ('owner',)
+
+
+class GetBusinessSerializer(serializers.ModelSerializer):
+    owner = EmployeeProfileSerializer()
+    category = CategorySerializer()
+    images = ImageSerializer(many=True)
+
+    class Meta:
+        model = Business
+        fields = "__all__"
+
+
+class BusinessByClientReturnSerializer(GetBusinessSerializer):
+    follower_count = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+    events = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_follower_count(business):
+        return business.owner.followers.count()
+
+    @staticmethod
+    def get_comments(business):
+        serialized_comments = CommentSerializer(business.owner.comment_owner.order_by("-created_at")[:3], many=True)
+        return serialized_comments.data
+
+    @staticmethod
+    def get_events(business):
+        serialized_event = EventImageSerializer(business.owner.owned_event.order_by("start_datetime")[:5], many=True)
+        return serialized_event.data
