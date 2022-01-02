@@ -270,7 +270,7 @@ def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
                                               owner=owner_profile).annotate(
         participant_count=Count("participants")).filter(
         participant_count__gte=0
-    )
+    ).order_by('start_datetime')
     return reserve_list[:5]
 
 

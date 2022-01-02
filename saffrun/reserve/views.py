@@ -342,10 +342,11 @@ class ReserveDetail(RetrieveAPIView):
                     date).filter(participant_count=0).count(),
                 "nearest_reserve": ReserveOwnerDetail(
                     instance=self.get_nearest_reserve_detail(current_time, date)).data,
-                "data_of_chart": self.get_participant_count_query(date).values('start_datetime',
-                                                                               percent_full=Cast(F('participant_count'),
-                                                                                                 FloatField()) / Cast(F(
-                                                                                   'capacity'), FloatField()))
+                "data_of_chart": self.get_participant_count_query(date).order_by('start_datetime').values(
+                    'start_datetime',
+                    percent_full=Cast(F('participant_count'),
+                                      FloatField()) / Cast(F(
+                        'capacity'), FloatField()))
             })
         if serializer.is_valid():
             return Response(serializer.data)
@@ -477,7 +478,8 @@ class ResarvationTableReserveDetail(RetrieveAPIView):
                                                          owner=self.profile).count() / page_count),
                 'reserves': ReserveOwnerDetail(
                     instance=paginator.paginate_queryset(Reservation.objects.filter(start_datetime__date=date,
-                                                                                    owner=self.profile), request),
+                                                                                    owner=self.profile).order_by(
+                        'start_datetime'), request),
                     many=True).data
             })
         if serializer.is_valid():
