@@ -138,6 +138,6 @@ class GetYearlyDetails(APIView):
                 {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
                 status=400,
             )
-        event_reserve_result = get_yearly_payment_details(request.user.employee_profile,
-                                                          year_serializer.validated_data.get("year"))
-        return Response({"payments": event_reserve_result}, status=200)
+        payments = get_yearly_payment_details(request.user.employee_profile,
+                                              year_serializer.validated_data.get("year"))
+        return Response(payments, status=200)
