@@ -73,9 +73,9 @@ class HomePage(generics.RetrieveAPIView):
                 'number_of_comments': Comment.objects.filter(owner=self.profile).count(),
                 'number_of_user_comments': Comment.objects.filter(owner=self.profile, is_parent=True).values(
                     'user').distinct().count(),
-                'rate': 4.5,
-                'number_user_rate': 10,
-                'last_comments': Comment.objects.filter(owner=self.profile).order_by(
+                'rate': self.profile.business.rate,
+                'number_user_rate': self.profile.business.rate_count,
+                'last_comments': Comment.objects.filter(owner=self.profile, is_parent=True).order_by(
                     '-id').annotate(
                     username=F('user__user__username')).values('username',
                                                                'content',
@@ -176,6 +176,7 @@ class HomePageClient(generics.RetrieveAPIView):
                        "validation_errors": serializer.errors},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
 
 class GetYearlyDetails(APIView):
     @swagger_auto_schema(

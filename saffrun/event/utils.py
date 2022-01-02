@@ -85,6 +85,7 @@ def create_an_event(validated_data, owner):
         end_datetime=validated_data["end_datetime"],
         title=validated_data["title"],
         discount=validated_data["discount"],
+        description=validated_data["description"],
         category=get_object_or_404(Category, id=validated_data["category_id"]),
         owner=owner,
         price=validated_data["price"]
