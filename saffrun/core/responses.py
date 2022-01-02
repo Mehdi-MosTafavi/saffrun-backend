@@ -30,6 +30,7 @@ class SuccessResponse:
     CREATED = "created!"
     RESERVED = "reserved!"
     DELETED = "deleted!"
+    CHANGED = "changed!"
     @staticmethod
     def reserve_created_message(count: int):
         return str(count) + " objects has been created!"

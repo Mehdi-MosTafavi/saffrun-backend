@@ -16,6 +16,7 @@ class FollowSerializer(serializers.Serializer):
 class EmployeeProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField("get_full_name")
     username = serializers.SerializerMethodField("get_username")
+    title = serializers.SerializerMethodField("get_title")
 
     @staticmethod
     def get_full_name(user_profile):
@@ -29,19 +30,27 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
     def get_username(user_profile):
         return user_profile.user.username
 
+    @staticmethod
+    def get_title(user_profile):
+        print(user_profile.business)
+        return user_profile.business.title if user_profile.business is not None else user_profile.user.last_name
+
     class Meta:
         model = UserProfile
-        fields = ["id", "username", "full_name"]
+        fields = ["id", "username", "full_name", "title"]
 
 
 class RemoveFollowerSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
-
-
+    
 class UpdateBusinessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Business
         exclude = ('owner',)
+
+
+from category.serializers import CategorySerializer
+from profile.serializers import EmployeeProfileSerializer
 
 
 class GetBusinessSerializer(serializers.ModelSerializer):
@@ -54,10 +63,19 @@ class GetBusinessSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+from comment.serializers import CommentSerializer
+from event.serializers import EventImageSerializer
+
+
 class BusinessByClientReturnSerializer(GetBusinessSerializer):
     follower_count = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
     events = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
+
+    def get_is_following(self, bussiness):
+        user = get_object_or_404(UserProfile, user=self.context['request'].user)
+        return user in bussiness.owner.followers.all()
 
     @staticmethod
     def get_follower_count(business):
@@ -72,6 +90,20 @@ class BusinessByClientReturnSerializer(GetBusinessSerializer):
     def get_events(business):
         serialized_event = EventImageSerializer(business.owner.owned_event.order_by("start_datetime")[:5], many=True)
         return serialized_event.data
+
+class GetYearlyDetailSerializer(serializers.Serializer):
+    year = serializers.IntegerField(allow_null=True, default=timezone.now().year)
+
+class EventReserveSerializer(serializers.Serializer):
+    event = serializers.IntegerField()
+    reserve = serializers.IntegerField()
+
+class RateBusinessPostSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField()
+    rate = serializers.FloatField()
+
+class RateBusinessReturnSerializer(serializers.Serializer):
+    new_rate = serializers.IntegerField()
 
 
 class EventImageSerializer(FlexFieldsModelSerializer):

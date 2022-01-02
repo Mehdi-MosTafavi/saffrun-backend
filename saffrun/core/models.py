@@ -23,5 +23,3 @@ class Image(BaseModel):
     )
     image_ppoi = PPOIField(null=True, blank=True)
 
-
-

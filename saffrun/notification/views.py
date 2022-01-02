@@ -1,17 +1,17 @@
-from django.shortcuts import render
-
 # Create your views here.
+from math import ceil
+
+from core.responses import ErrorResponse
+from core.serializers import GetAllSerializer
+from core.services import is_user_client, is_user_employee
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.responses import ErrorResponse
-from core.services import is_user_client, is_user_employee
 from .serializers import AddNotificationTokenSerializer, SendNotificationSerializer, \
     EmployeeGetNotificationsSerializer, ClientGetNotificationSerializer
 from .utils import add_token_to_user, send_notif, get_all_sent_notification, get_all_received_notification
-from core.serializers import GetAllSerializer
 
 
 class SetUserNotificationToken(APIView):
@@ -34,7 +34,8 @@ class SetUserNotificationToken(APIView):
             add_token_to_user(request.user.user_profile, add_token_serializer.validated_data.get("notification_token"))
             return Response({"status": "Done"}, status=200)
         else:
-            return Response({"status": "Error", "detail":ErrorResponse.USER_CLIENT}, status=400)
+            return Response({"status": "Error", "detail": ErrorResponse.USER_CLIENT}, status=400)
+
 
 class SendNotification(APIView):
     @swagger_auto_schema(
@@ -78,6 +79,7 @@ class SendNotification(APIView):
                 status=400,
             )
 
+
 class EmployeeGetNotifications(APIView):
     @swagger_auto_schema(
         query_serializer=GetAllSerializer,
@@ -97,9 +99,11 @@ class EmployeeGetNotifications(APIView):
         page = serializer.validated_data.get("page")
         page_count = serializer.validated_data.get("page_count")
         if is_user_employee(request.user):
-            notifications = get_all_sent_notification(request.user.employee_profile, page, page_count, request)
+            notifications, count_notifs = get_all_sent_notification(request.user.employee_profile, page, page_count,
+                                                                    request)
             notification_serializer = EmployeeGetNotificationsSerializer(notifications, many=True)
-            return Response({"notifications": notification_serializer.data}, status=status.HTTP_200_OK)
+            return Response({"pages": ceil(count_notifs / page_count), "notifications": notification_serializer.data},
+                            status=status.HTTP_200_OK)
         else:
             return Response(
                 {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},

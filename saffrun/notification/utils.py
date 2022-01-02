@@ -1,9 +1,9 @@
-from profile.models import UserProfile, EmployeeProfile
+from core.configs import Config
 from najva_api_client.najva import Najva
+from profile.models import UserProfile, EmployeeProfile
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Notification
-from core.configs import Config
 
 
 def add_token_to_user(user_profile: UserProfile, token: str):
@@ -34,11 +34,13 @@ def send_notif(employee: EmployeeProfile, _type: int, title: str, text: str, url
     except:
         return False
 
+
 def get_all_sent_notification(employee: EmployeeProfile, page: int, page_count: int, request):
     paginator = PageNumberPagination()
     paginator.page_size = page_count
     paginator.page = page
-    return paginator.paginate_queryset(employee.sent_notifications.all(), request)
+    return paginator.paginate_queryset(employee.sent_notifications.all(), request), employee.sent_notifications.count()
+
 
 def get_all_received_notification(client: UserProfile, page: int, page_count: int, request):
     paginator = PageNumberPagination()

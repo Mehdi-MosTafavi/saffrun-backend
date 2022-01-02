@@ -1,7 +1,7 @@
 from authentication.serializers import (
     RegisterSerializer,
 )
-from core.responses import ErrorResponse
+from core.responses import ErrorResponse, SuccessResponse
 from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
 from profile.models import Business
@@ -10,8 +10,11 @@ from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .serializers import RecoverPasswordSerializer
+from .serializers import RecoverPasswordSerializer, ChangePasswordSerializer
 from .tasks import send_email
+
+from .utils import change_password
+
 
 
 class RegisterUser(generics.CreateAPIView):
@@ -59,7 +62,7 @@ class RegisterUser(generics.CreateAPIView):
         return
 
 
-class ChangePassword(generics.GenericAPIView):
+class ForgotPassword(generics.GenericAPIView):
     permission_classes = (AllowAny,)
 
     @swagger_auto_schema(
@@ -79,3 +82,25 @@ class ChangePassword(generics.GenericAPIView):
         except:
             return Response()
         return Response()
+
+
+class ChangePassword(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+
+    @swagger_auto_schema(
+        request_body=ChangePasswordSerializer,
+        responses={
+            status.HTTP_200_OK: SuccessResponse.CHANGED,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA,
+        }
+    )
+    def post(self, request):
+        change_password_serializer = ChangePasswordSerializer(data=request.data)
+        if not change_password_serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        old_password = change_password_serializer.validated_data.get("old_password")
+        new_password = change_password_serializer.validated_data.get("new_password")
+        return change_password(request.user, old_password, new_password)

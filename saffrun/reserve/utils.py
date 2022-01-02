@@ -10,7 +10,6 @@ from rest_framework.request import Request
 from .models import Reservation
 
 
-
 def check_collision(wanted_start, wanted_end, owner):
     is_owner = Q(owner=owner)
     right_collision = Q(start_datetime__gt=wanted_start) & Q(
@@ -62,12 +61,14 @@ def get_a_day_data_for_future(date, owner):
     day_dic.update({"next_reserve": time})
     return day_dic
 
+
 def is_today_have_future_reserve(owner):
     return True if Reservation.objects.filter(
         start_datetime__date=timezone.datetime.now().date(),
         owner=owner,
         start_datetime__gte=timezone.datetime.now()
     ).count() > 0 else False
+
 
 def get_details_past(dates, **kwargs):
     final_list = []
@@ -129,7 +130,7 @@ def get_paginated_future_reservation_result(reserves_serializer, request):
     paginated_future = paginator.paginate_queryset(future_reserves, request)
     return get_details_future(
         paginated_future, owner=request.user.employee_profile
-    )
+    ), future_reserves.count()
 
 
 def get_user_busy_dates_list(user):
@@ -196,7 +197,7 @@ def create_reserve_objects(
 
 def get_nearest_free_reserve(admin_id):
     try:
-        admin = EmployeeProfile.objects.get(user=admin_id)
+        admin = EmployeeProfile.objects.get(id=admin_id)
         reserves = (
             Reservation.objects.filter(
                 owner=admin, start_datetime__gte=timezone.datetime.now()
@@ -213,7 +214,7 @@ def get_nearest_free_reserve(admin_id):
 
 
 def get_next_n_days_free_reserves(admin_id, days):
-    admin = EmployeeProfile.objects.get(user=admin_id)
+    admin = EmployeeProfile.objects.get(id=admin_id)
     today_date = timezone.datetime.now().date()
     reserves = (
         Reservation.objects.filter(
@@ -247,7 +248,7 @@ def reserve_it(user, reserve_id):
 
 def get_reserve_abstract_dictionary(reserve):
     return (
-        {"reserve_id": reserve.id, "datetime": reserve.get_start_datetime()}
+        {"reserve_id": reserve.id, "datetime": reserve.get_start_datetime(), "price": reserve.price}
         if reserve
         else ""
     )
@@ -271,6 +272,7 @@ def get_nearest_busy_reserve(owner_profile: EmployeeProfile):
         participant_count__gte=0
     )
     return reserve_list[:5]
+
 
 def get_reserve_history_client(client: UserProfile, page: int, page_count: int, request: Request):
     paginator = PageNumberPagination()

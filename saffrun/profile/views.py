@@ -51,10 +51,6 @@ class UserView(APIView):
                 "country": profile.country,
                 "province": profile.province,
                 "gender": profile.gender,
-                "category": {
-                    'id': profile.category.id,
-                    'title': profile.category.name
-                } if isinstance(profile, EmployeeProfile) else {},
                 "address": profile.address,
                 "avatar": ImageAvatarSerializer(instance=profile.avatar).data
             }
@@ -80,7 +76,7 @@ class UserView(APIView):
             profile.address = self.request.data["address"]
             profile.gender = self.request.data["gender"]
             if "image_id" in self.request.data:
-                if self.request.data["image_id"] == '-1':
+                if self.request.data["image_id"] == -1:
                     profile.avatar = None
                 else:
                     profile.avatar = get_object_or_404(Image, id=self.request.data["image_id"])

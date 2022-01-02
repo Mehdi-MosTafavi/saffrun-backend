@@ -1,6 +1,8 @@
 from core.models import Image
+from django.utils import timezone
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 
 
@@ -38,7 +40,6 @@ class ImageAvatarSerializer(FlexFieldsModelSerializer):
         fields = ["image"]
 
 
-
 class HomepageResponse(serializers.Serializer):
     image = serializers.DictField()
     first_name = serializers.CharField(allow_blank=True)
@@ -62,7 +63,8 @@ class HomepageResponse(serializers.Serializer):
 class HomepageResponseClient(serializers.Serializer):
     list_event = serializers.ListField(min_length=0, max_length=3, child=serializers.DictField())
     list_reserve = serializers.ListField(min_length=0, max_length=3, child=serializers.DictField())
-    
+
+
 class GetAllSerializer(serializers.Serializer):
     page = serializers.IntegerField()
     page_count = serializers.IntegerField()
