@@ -60,6 +60,7 @@ class EmployeeProfile(ProfileBase):
     def __str__(self):
         return self.user.username
 
+
 class Business(models.Model):
     owner = models.OneToOneField(EmployeeProfile, on_delete=models.CASCADE, related_name='business')
     title = models.CharField(max_length=150, null=True)
@@ -71,5 +72,5 @@ class Business(models.Model):
     full_address = models.TextField(null=True)
     description = models.TextField(null=True)
     images = models.ManyToManyField(Image, related_name="businesses", blank=True)
-    rate = models.FloatField(null=True)
-    rate_count = models.IntegerField(null=True)
+    rate = models.FloatField(null=True, default=0)
+    rate_count = models.IntegerField(null=True, default=0)
