@@ -21,13 +21,18 @@ from .serializers import (
     AddParticipantSerializer,
     AddImageSerializer,
     EventImageSerializer, EventDetailImageSerializer, EventHistorySerializer, RemoveParticipantsSerializer,
+    EventUpdateSerializer,
 )
 from .utils import get_sorted_events, create_an_event, get_event_history_client, get_sorted_events_client
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
-    serializer_class = EventImageSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "PUT":
+            return EventUpdateSerializer
+        return EventImageSerializer
 
 
 class RetrieveEventAPIView(RetrieveAPIView):

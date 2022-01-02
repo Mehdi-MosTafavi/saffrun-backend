@@ -237,3 +237,9 @@ class EventHistorySerializer(serializers.ModelSerializer):
 class RemoveParticipantsSerializer(serializers.Serializer):
     event_id = serializers.IntegerField()
     user_id = serializers.IntegerField()
+
+
+class EventUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        exclude = ()
