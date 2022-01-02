@@ -1,8 +1,8 @@
+from core.serializers import ImageAvatarSerializer
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
 
 from .models import Comment
-from core.serializers import ImageAvatarSerializer
 
 
 class ReplyRelatedField(serializers.RelatedField):
@@ -42,7 +42,7 @@ class CommentSerializer(FlexFieldsModelSerializer):
                   ]
 
     def get_user(self, obj: Comment):
-        return {"name": obj.user.user.last_name, "image": ImageAvatarSerializer(instance=obj.user.avatar).data}
+        return {"name": obj.user.user.get_full_name(), "image": ImageAvatarSerializer(instance=obj.user.avatar).data}
 
 
 class CommentPostSerializer(serializers.Serializer):
