@@ -2,6 +2,7 @@ from math import ceil
 
 from core.responses import ErrorResponse
 from core.serializers import GetAllSerializer
+from core.serializers import GetYearlyDetailSerializer
 from core.services import is_user_client
 from core.services import is_user_employee
 from drf_yasg.utils import swagger_auto_schema
@@ -11,10 +12,11 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Invoice
 from .serializers import PayInvoiceSerializer, ListInvoice, ManyPaymentSerializer
-from .utils import get_payments_of_employee, get_payments_of_user
+from .utils import get_payments_of_employee, get_payments_of_user, get_yearly_payment_details
 
 
 class Payment(generics.ListCreateAPIView):
@@ -114,3 +116,28 @@ def get_all_payments_user(request):
         {"Error": ErrorResponse.INVALID_DATA},
         status=status.HTTP_406_NOT_ACCEPTABLE,
     )
+
+
+class GetYearlyDetails(APIView):
+    @swagger_auto_schema(
+        query_serializer=GetYearlyDetailSerializer,
+        responses={
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_EMPLOYEE,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA
+        }
+    )
+    def get(self, request):
+        year_serializer = GetYearlyDetailSerializer(data=request.GET)
+        if not year_serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if not is_user_employee(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_EMPLOYEE},
+                status=400,
+            )
+        event_reserve_result = get_yearly_payment_details(request.user.employee_profile,
+                                                          year_serializer.validated_data.get("year"))
+        return Response({"payments": event_reserve_result}, status=200)

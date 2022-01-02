@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.utils import timezone
 from event.models import Event
 from event.serializers import SpecificEventSerializer
@@ -125,3 +125,27 @@ def get_chart_data(chart_months, list_year_date, payments):
         month_payment_total = payments.filter(created_at__year=year, created_at__month=month).aggregate(
             sum_payment=Sum('amount'))
         chart_months.append(month_payment_total['sum_payment'] if month_payment_total['sum_payment'] else 0)
+
+
+def get_date_query(year: int, month: int):
+    start_in_year_query = Q(created_at__year=year)
+    in_year_query = start_in_year_query
+    start_in_month_query = Q(created_at__month=month)
+    in_month_query = start_in_month_query
+    date_query = in_month_query & in_year_query
+    return date_query
+
+
+def get_payment_owner(employee, year, month):
+    date_query = get_date_query(year, month)
+    payment_sum = Invoice.objects.filter(owner=employee).filter(date_query).aggregate(payment_sum=Sum("amount"))[
+        "payment_sum"]
+    return payment_sum if payment_sum else 0
+
+
+def get_yearly_payment_details(employee: EmployeeProfile, year: int) -> list:
+    result_list = []
+    for month in range(12):
+        payment_month = get_payment_owner(employee, year, month + 1)
+        result_list.append(payment_month)
+    return result_list
