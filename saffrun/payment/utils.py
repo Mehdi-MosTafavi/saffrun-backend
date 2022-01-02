@@ -143,9 +143,20 @@ def get_payment_owner(employee, year, month):
     return payment_sum if payment_sum else 0
 
 
-def get_yearly_payment_details(employee: EmployeeProfile, year: int) -> list:
+def get_yearly_payment_details(employee: EmployeeProfile, year: int) -> dict:
     result_list = []
     for month in range(12):
         payment_month = get_payment_owner(employee, year, month + 1)
         result_list.append(payment_month)
-    return result_list
+    now = timezone.now()
+    current_month = get_payment_owner(employee, now.year, now.month)
+    if now.month == 1:
+        past_month = get_payment_owner(employee, now.year - 1, now.month - 1)
+    else:
+        past_month = get_payment_owner(employee, now.year, now.month - 1)
+
+    return {
+        'data': result_list,
+        'current_month': current_month,
+        'past_month': past_month
+    }
