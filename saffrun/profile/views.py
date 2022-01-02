@@ -4,6 +4,7 @@ from core.responses import ErrorResponse
 from core.responses import SuccessResponse
 from core.serializers import ImageAvatarSerializer
 from core.services import is_user_client, is_user_employee
+from core.utils import rate_employee
 from django.db import transaction
 from django.db.models import F
 from drf_yasg.utils import swagger_auto_schema
@@ -17,7 +18,7 @@ from rest_framework.views import APIView
 
 from .models import Business
 from .serializers import FollowSerializer, RemoveFollowerSerializer, BusinessByClientReturnSerializer, \
-    GetBusinessSerializer, UpdateBusinessSerializer
+    GetBusinessSerializer, UpdateBusinessSerializer, RateBusinessPostSerializer, RateBusinessReturnSerializer
 from .utils import remove_follower_user
 
 
@@ -225,3 +226,30 @@ class GetBusinessClientView(APIView):
             )
         business_serializer = BusinessByClientReturnSerializer(employee.business)
         return Response(business_serializer.data, status=200)
+
+
+class RateBusiness(APIView):
+    @swagger_auto_schema(
+        request_body=RateBusinessPostSerializer,
+        responses={
+            status.HTTP_200_OK: RateBusinessReturnSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
+            status.HTTP_404_NOT_FOUND: ErrorResponse.EMPLOYEE_NOT_FOUND,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA
+        }
+    )
+    def post(self, request):
+        rate_serializer = RateBusinessPostSerializer(data=request.data)
+        if not rate_serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if not is_user_client(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        employee_id = rate_serializer.validated_data.get("employee_id")
+        rate = rate_serializer.validated_data.get("rate")
+        return rate_employee(employee_id, rate)

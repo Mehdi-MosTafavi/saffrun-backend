@@ -1,10 +1,9 @@
-from category.serializers import CategorySerializer
-from comment.serializers import CommentSerializer
 from core.serializers import ImageAvatarSerializer
 from core.serializers import ImageSerializer
 from event.models import Event
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
 from .models import UserProfile, Business
 
@@ -64,7 +63,6 @@ class GetBusinessSerializer(serializers.ModelSerializer):
 
 
 from comment.serializers import CommentSerializer
-from event.serializers import EventImageSerializer
 
 
 class BusinessByClientReturnSerializer(GetBusinessSerializer):
@@ -91,8 +89,6 @@ class BusinessByClientReturnSerializer(GetBusinessSerializer):
         serialized_event = EventImageSerializer(business.owner.owned_event.order_by("start_datetime")[:5], many=True)
         return serialized_event.data
 
-class GetYearlyDetailSerializer(serializers.Serializer):
-    year = serializers.IntegerField(allow_null=True, default=timezone.now().year)
 
 class EventReserveSerializer(serializers.Serializer):
     event = serializers.IntegerField()
