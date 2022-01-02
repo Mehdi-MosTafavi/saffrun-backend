@@ -138,11 +138,12 @@ class ReserveSerializer(serializers.ModelSerializer):
     owner = serializers.SerializerMethodField(method_name="get_owner")
     start_time = serializers.SerializerMethodField(method_name="get_start_time")
     end_time = serializers.SerializerMethodField(method_name="get_end_time")
+    image = serializers.SerializerMethodField()
 
     def get_owner(self, reservation):
         return {
             "id": reservation.owner.id,
-            "username": reservation.owner.business.title if reservation.owner.business is not None else reservation.owner.user.get_full_name()
+            "username": reservation.owner.user.get_full_name()
         }
 
     def get_start_time(self, reservation):
@@ -151,9 +152,12 @@ class ReserveSerializer(serializers.ModelSerializer):
     def get_end_time(self, reservation):
         return reservation.get_end_datetime().time()
 
+    def get_image(self, obj):
+        return ImageSerializer(instance=obj.owner.avatar).data
+
     class Meta:
         model = Reservation
-        fields = ["id", "owner", "start_time", "end_time", "price"]
+        fields = ["id", "owner", "start_time", "end_time", "price", "image"]
 
 
 class ReserveOwnerDetail(serializers.ModelSerializer):

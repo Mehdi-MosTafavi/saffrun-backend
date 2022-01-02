@@ -10,5 +10,6 @@ urlpatterns = [
     path("follow/", FollowEmployee.as_view(), name="follow"),
     path("follow/remove-follower", remove_follower, name="follow-remove"),
     path(r"web/business/", views.BusinessView.as_view(), name="web-business"),
-    path(r"client/business/<int:employee_id>", views.GetBusinessClientView.as_view(), name="client-business")
+    path(r"client/business/<int:employee_id>", views.GetBusinessClientView.as_view(), name="client-business"),
+    path(r"business/rate/", views.RateBusiness.as_view(), name="rate-business")
 ]

@@ -2,9 +2,7 @@ from core.models import Image
 from django.utils import timezone
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 from versatileimagefield.serializers import VersatileImageFieldSerializer
-
 
 
 class ImageSerializer(FlexFieldsModelSerializer):
@@ -68,3 +66,7 @@ class HomepageResponseClient(serializers.Serializer):
 class GetAllSerializer(serializers.Serializer):
     page = serializers.IntegerField()
     page_count = serializers.IntegerField()
+
+
+class GetYearlyDetailSerializer(serializers.Serializer):
+    year = serializers.IntegerField(allow_null=True, default=timezone.now().year)
