@@ -142,7 +142,7 @@ class ReserveSerializer(serializers.ModelSerializer):
     def get_owner(self, reservation):
         return {
             "id": reservation.owner.id,
-            "username": reservation.owner.business.title if reservation.owner.business is not None else reservation.owner.user.last_name
+            "username": reservation.owner.business.title if reservation.owner.business is not None else reservation.owner.user.get_full_name()
         }
 
     def get_start_time(self, reservation):

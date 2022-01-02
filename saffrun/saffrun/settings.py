@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "corsheaders",
     'comment',
     'category',
+    'payment',
 ]
 
 MIDDLEWARE = [

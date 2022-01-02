@@ -14,13 +14,15 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Image, Business
+
+from .models import Image
 from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, \
     GetBusinessSerializer, UpdateBusinessSerializer, BusinessByClientReturnSerializer, EventReserveSerializer, \
     GetYearlyDetailSerializer, RateBusinessPostSerializer, RateBusinessReturnSerializer
 from .services import is_user_client, is_user_employee
 from .utils import get_yearly_details, rate_employee
+
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -178,7 +180,6 @@ class HomePageClient(generics.RetrieveAPIView):
                        "validation_errors": serializer.errors},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-
 
 class BusinessView(RetrieveUpdateAPIView):
     queryset = Business.objects.all()

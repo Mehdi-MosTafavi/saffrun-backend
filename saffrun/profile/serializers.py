@@ -1,6 +1,12 @@
+from category.serializers import CategorySerializer
+from comment.serializers import CommentSerializer
+from core.serializers import ImageAvatarSerializer
+from core.serializers import ImageSerializer
+from event.models import Event
+from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
 
-from .models import UserProfile
+from .models import UserProfile, Business
 
 
 class FollowSerializer(serializers.Serializer):
@@ -36,3 +42,109 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
 
 class RemoveFollowerSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
+    
+class UpdateBusinessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Business
+        exclude = ('owner',)
+
+
+from category.serializers import CategorySerializer
+from profile.serializers import EmployeeProfileSerializer
+
+
+class GetBusinessSerializer(serializers.ModelSerializer):
+    owner = EmployeeProfileSerializer()
+    category = CategorySerializer()
+    images = ImageSerializer(many=True)
+
+    class Meta:
+        model = Business
+        fields = "__all__"
+
+
+from comment.serializers import CommentSerializer
+from event.serializers import EventImageSerializer
+
+
+class BusinessByClientReturnSerializer(GetBusinessSerializer):
+    follower_count = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+    events = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
+
+    def get_is_following(self, bussiness):
+        user = get_object_or_404(UserProfile, user=self.context['request'].user)
+        return user in bussiness.owner.followers.all()
+
+    @staticmethod
+    def get_follower_count(business):
+        return business.owner.followers.count()
+
+    @staticmethod
+    def get_comments(business):
+        serialized_comments = CommentSerializer(business.owner.comment_owner.order_by("-created_at")[:3], many=True)
+        return serialized_comments.data
+
+    @staticmethod
+    def get_events(business):
+        serialized_event = EventImageSerializer(business.owner.owned_event.order_by("start_datetime")[:5], many=True)
+        return serialized_event.data
+
+class GetYearlyDetailSerializer(serializers.Serializer):
+    year = serializers.IntegerField(allow_null=True, default=timezone.now().year)
+
+class EventReserveSerializer(serializers.Serializer):
+    event = serializers.IntegerField()
+    reserve = serializers.IntegerField()
+
+class RateBusinessPostSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField()
+    rate = serializers.FloatField()
+
+class RateBusinessReturnSerializer(serializers.Serializer):
+    new_rate = serializers.IntegerField()
+
+
+class EventImageSerializer(FlexFieldsModelSerializer):
+    images = ImageSerializer(many=True)
+    participants = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = [
+            'id',
+            "title",
+            "description",
+            "discount",
+            "owner",
+            'participants',
+            "start_datetime",
+            "end_datetime",
+            "category",
+            "images",
+        ]
+
+    def get_category(self, obj):
+        return {
+            'id': obj.category.id,
+            'title': obj.category.name
+        }
+
+    def get_owner(self, obj):
+        return {
+            'id': obj.owner.id,
+            'title': obj.owner.user.username
+        }
+
+    def get_participants(self, obj):
+        particpiants_list = []
+        for participant in obj.participants.all():
+            particpiants_list.append({
+                'id': participant.id,
+                'name': participant.user.username,
+                'image': ImageAvatarSerializer(instance=participant.avatar).data
+            })
+        return particpiants_list

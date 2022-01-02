@@ -59,3 +59,17 @@ class EmployeeProfile(ProfileBase):
 
     def __str__(self):
         return self.user.username
+
+class Business(models.Model):
+    owner = models.OneToOneField(EmployeeProfile, on_delete=models.CASCADE, related_name='business')
+    title = models.CharField(max_length=150, null=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='businesses', null=True)
+    establishment_date = models.DateTimeField(null=True)
+    worker_count = models.IntegerField(null=True)
+    email = models.EmailField(null=True)
+    phone_number = models.CharField(max_length=12, null=True)
+    full_address = models.TextField(null=True)
+    description = models.TextField(null=True)
+    images = models.ManyToManyField(Image, related_name="businesses", blank=True)
+    rate = models.FloatField(null=True)
+    rate_count = models.IntegerField(null=True)
