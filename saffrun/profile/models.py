@@ -20,12 +20,7 @@ class ProfileBase(BaseModel):
     address = models.CharField(max_length=50, null=True, blank=True)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1, default='N')
 
-    avatar = models.ForeignKey(
-        Image,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
+
 
     class Meta:
         abstract = True
@@ -41,6 +36,14 @@ class UserProfile(ProfileBase):
     def __str__(self):
         return self.user.username
 
+    avatar = models.ForeignKey(
+        Image,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="avatar_user"
+
+    )
 
 class EmployeeProfile(ProfileBase):
     user = models.OneToOneField(
@@ -56,6 +59,13 @@ class EmployeeProfile(ProfileBase):
     )
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True,
                                  related_name='category_employee')
+    avatar = models.ForeignKey(
+        Image,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="avatar_employee"
+    )
 
     def __str__(self):
         return self.user.username
