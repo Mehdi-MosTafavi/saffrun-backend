@@ -17,9 +17,11 @@ from rest_framework.views import APIView
 
 from .models import Image
 from .responses import ErrorResponse
-from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, GetYearlyDetailSerializer
-from .services import is_user_employee
+from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, GetYearlyDetailSerializer, \
+    ClientSearchSerializer, EventBusinessSerializer
+from .services import is_user_employee, is_user_client
 from .utils import get_yearly_details
+from .utils import get_event_businesses_list
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -206,3 +208,36 @@ class GetYearlyDetails(APIView):
         event_reserve_result = get_yearly_details(request.user.employee_profile,
                                                   year_serializer.validated_data.get("year"))
         return Response({"result": event_reserve_result}, status=200)
+
+class ClientSearchView(APIView):
+    @swagger_auto_schema(
+        query_serializer=ClientSearchSerializer,
+        responses={
+            status.HTTP_200_OK: EventBusinessSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
+            status.HTTP_406_NOT_ACCEPTABLE: ErrorResponse.INVALID_DATA
+        }
+    )
+    def get(self, request):
+        serializer = ClientSearchSerializer(data=request.GET)
+        if not serializer.is_valid():
+            return Response(
+                exception={"error": ErrorResponse.INVALID_DATA},
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if not is_user_client(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
+                status=400,
+            )
+        search_query = serializer.validated_data.get('search_query')
+        category_id = serializer.validated_data.get('category')
+        sort = serializer.validated_data.get('sort')
+        from_datetime = serializer.validated_data.get('from_datetime')
+        until_datetime = serializer.validated_data.get('until_datetime')
+
+        events_businesses_dict = get_event_businesses_list(
+            search_query, category_id, sort, from_datetime, until_datetime
+        )
+
+        return Response(events_businesses_dict, status=200)

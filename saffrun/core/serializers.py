@@ -1,4 +1,5 @@
 from core.models import Image
+from django.db import models
 from django.utils import timezone
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
@@ -70,3 +71,24 @@ class GetAllSerializer(serializers.Serializer):
 
 class GetYearlyDetailSerializer(serializers.Serializer):
     year = serializers.IntegerField(allow_null=True, default=timezone.now().year)
+
+
+class ClientSearchSerializer(serializers.Serializer):
+    class SortChoices(models.TextChoices):
+        TTL = "title"
+        SDT = "start_datetime"
+
+    search_query = serializers.CharField(
+        max_length=200, allow_null=False, allow_blank=True
+    )
+    from_datetime = serializers.DateTimeField(required=False)
+    until_datetime = serializers.DateTimeField(required=False)
+    category = serializers.IntegerField(required=False)
+    sort = serializers.ChoiceField(SortChoices, default=SortChoices.TTL)
+
+from event.serializers import EventImageSerializer
+from profile.serializers import GetBusinessSerializer
+
+class EventBusinessSerializer(serializers.Serializer):
+    events = serializers.ListField(child=EventImageSerializer())
+    businesses = serializers.ListField(child=GetBusinessSerializer())
