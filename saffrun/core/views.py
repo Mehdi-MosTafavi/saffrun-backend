@@ -10,6 +10,7 @@ from profile.serializers import EventReserveSerializer
 from reserve.models import Reservation
 from rest_flex_fields import FlexFieldsModelViewSet
 from rest_framework import generics, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -158,16 +159,19 @@ class HomePageClient(generics.RetrieveAPIView):
                     end_datetime__gte=time
                 ).order_by('-updated_at').distinct().values('id', 'title', 'description', 'start_datetime',
                                                             'end_datetime', owner_name=F('owner__business__title')),
-                'list_reserve': Reservation.objects.filter(
-                    participants__in=[self.profile.id],
-                    end_datetime__gte=time
-                ).order_by('-updated_at').distinct().values('id', 'start_datetime', 'end_datetime',
-                                                            ownerId=F('owner__id'),
-                                                            owner_name=F('owner__business__title'),
-                                                            ),
+                'list_reserve': [dict(item, **{'picture': ImageSerializer(
+                    instance=get_object_or_404(Image, avatar_employee=self.profile.id)).data}) for item in
+                                 Reservation.objects.filter(
+                                     participants__in=[self.profile.id],
+                                     end_datetime__gte=time
+                                 ).order_by('-updated_at').distinct().values('id', 'start_datetime', 'end_datetime',
+                                                                             ownerId=F('owner__id'),
+                                                                             owner_name=F('owner__business__title'),
+                                                                             )],
 
             }
         )
+
         if serializer.is_valid():
             return Response(serializer.data)
         print(serializer.errors)
