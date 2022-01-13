@@ -73,7 +73,7 @@ class HomePage(generics.RetrieveAPIView):
                 'number_of_comments': Comment.objects.filter(owner=self.profile).count(),
                 'number_of_user_comments': Comment.objects.filter(owner=self.profile, is_parent=True).values(
                     'user').distinct().count(),
-                'rate': self.profile.business.rate,
+                'rate': round(self.profile.business.rate, 2),
                 'number_user_rate': self.profile.business.rate_count,
                 'last_comments': Comment.objects.filter(owner=self.profile, is_parent=True).order_by(
                     '-id').annotate(
@@ -157,13 +157,13 @@ class HomePageClient(generics.RetrieveAPIView):
                     participants__in=[self.profile.id],
                     end_datetime__gte=time
                 ).order_by('-updated_at').distinct().values('id', 'title', 'description', 'start_datetime',
-                                                            'end_datetime', owner_name=F('owner__user__username')),
+                                                            'end_datetime', owner_name=F('owner__business__title')),
                 'list_reserve': Reservation.objects.filter(
                     participants__in=[self.profile.id],
                     end_datetime__gte=time
                 ).order_by('-updated_at').distinct().values('id', 'start_datetime', 'end_datetime',
                                                             ownerId=F('owner__id'),
-                                                            owner_name=F('owner__user__username'),
+                                                            owner_name=F('owner__business__title'),
                                                             ),
 
             }

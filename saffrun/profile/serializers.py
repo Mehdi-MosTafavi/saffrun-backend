@@ -81,7 +81,8 @@ class BusinessByClientReturnSerializer(GetBusinessSerializer):
 
     @staticmethod
     def get_comments(business):
-        serialized_comments = CommentSerializer(business.owner.comment_owner.order_by("-created_at")[:3], many=True)
+        serialized_comments = CommentSerializer(
+            business.owner.comment_owner.filter(is_parent=True).order_by("-created_at")[:3], many=True)
         return serialized_comments.data
 
     @staticmethod

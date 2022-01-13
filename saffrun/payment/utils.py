@@ -103,6 +103,7 @@ def get_payments_of_user(request):
         else:
             payment_reserve += payment.amount
         final_result.append({
+            "id": payment.id,
             'type': get_type_mode(payment),
             'amount': payment.amount,
             'date': payment.created_at,

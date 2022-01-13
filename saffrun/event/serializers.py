@@ -65,7 +65,7 @@ class EventImageSerializer(FlexFieldsModelSerializer):
     def get_owner(self, obj):
         return {
             'id': obj.owner.id,
-            'title': obj.owner.user.username
+            'title': obj.owner.business.title
         }
 
     def get_participants(self, obj):
@@ -119,7 +119,7 @@ class EventDetailImageSerializer(FlexFieldsModelSerializer):
     def get_owner(self, obj):
         return {
             'id': obj.owner.id,
-            'title': obj.owner.user.username
+            'title': obj.owner.business.title
         }
 
     def get_comments(self, obj):

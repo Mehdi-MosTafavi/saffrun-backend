@@ -224,7 +224,7 @@ class GetBusinessClientView(APIView):
                 {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        business_serializer = BusinessByClientReturnSerializer(employee.business)
+        business_serializer = BusinessByClientReturnSerializer(employee.business, context={'request': request})
         return Response(business_serializer.data, status=200)
 
 

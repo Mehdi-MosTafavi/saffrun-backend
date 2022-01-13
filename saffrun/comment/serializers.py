@@ -22,8 +22,9 @@ class ReplyRelatedField(serializers.RelatedField):
                 'id': value.id,
                 'content': value.content,
                 'time': value.updated_at,
-                "owner": value.event.owner.user.username if value.owner is None else value.owner.user.username,
-                "image": ImageAvatarSerializer(instance=value.event.owner.avatar if value.owner is None else value.owner.avatar).data
+                "owner": value.event.owner.business.title if value.owner is None else value.owner.business.title,
+                "image": ImageAvatarSerializer(
+                    instance=value.event.owner.avatar if value.owner is None else value.owner.avatar).data
             }
         raise Exception('Unexpected type of tagged object')
 

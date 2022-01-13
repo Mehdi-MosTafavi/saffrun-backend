@@ -33,7 +33,8 @@ def save_a_reply(validated_data: map, owner, comment):
         content=validated_data["content"],
         is_parent=False,
         owner=comment.owner,
-        event=comment.event
+        event=comment.event,
+        user=comment.user
     )
     reply_2.save()
     comment.reply = reply_2

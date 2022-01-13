@@ -153,7 +153,7 @@ class ReserveSerializer(serializers.ModelSerializer):
         return reservation.get_end_datetime().time()
 
     def get_image(self, obj):
-        return ImageSerializer(instance=obj.owner.avatar).data
+        return ImageSerializer(instance=obj.owner.business.images.all()[0]).data
 
     class Meta:
         model = Reservation
