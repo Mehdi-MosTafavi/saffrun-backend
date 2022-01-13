@@ -1,11 +1,12 @@
 from django.db.models import Q, Count, Sum
 
 from event.models import Event
-from profile.models import EmployeeProfile
 
 from reserve.models import Reservation
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+
+from profile.models import RateEmployee, UserProfile, EmployeeProfile
 
 
 def get_date_query(year: int, month: int):
@@ -44,14 +45,3 @@ def get_yearly_details(employee: EmployeeProfile, year:int) -> list:
         })
     return result_list
 
-def rate_employee(employee_id: int, rate: float) -> Response:
-    employee = get_object_or_404(EmployeeProfile, pk=employee_id)
-    business = employee.business
-    current_rate = business.rate
-    current_rate_count = business.rate_count
-    business.rate = (rate + (current_rate_count * current_rate)) / (current_rate_count + 1)
-    business.rate_count = current_rate_count + 1
-    business.save()
-    return Response({
-        "new_rate": business.rate
-    }, status=200)

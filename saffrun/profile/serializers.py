@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
 from .models import UserProfile, Business
+from .utils import calculate_employee_rate, get_employee_rate_count
 
 
 class FollowSerializer(serializers.Serializer):
@@ -56,6 +57,16 @@ class GetBusinessSerializer(serializers.ModelSerializer):
     owner = EmployeeProfileSerializer()
     category = CategorySerializer()
     images = ImageSerializer(many=True)
+    rate = serializers.SerializerMethodField('get_rate')
+    rate_count = serializers.SerializerMethodField('get_rate_count')
+
+    @staticmethod
+    def get_rate(business):
+        return calculate_employee_rate(business.owner)
+
+    @staticmethod
+    def get_rate_count(business):
+        return get_employee_rate_count(business.owner)
 
     class Meta:
         model = Business
