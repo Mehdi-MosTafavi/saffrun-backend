@@ -5,7 +5,7 @@ from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
-from .models import UserProfile, Business
+from .models import UserProfile, Business, RateEmployee
 from .utils import calculate_employee_rate, get_employee_rate_count
 
 
@@ -81,10 +81,17 @@ class BusinessByClientReturnSerializer(GetBusinessSerializer):
     comments = serializers.SerializerMethodField()
     events = serializers.SerializerMethodField()
     is_following = serializers.SerializerMethodField()
+    my_rate = serializers.SerializerMethodField()
 
     def get_is_following(self, bussiness):
         user = get_object_or_404(UserProfile, user=self.context['request'].user)
         return user in bussiness.owner.followers.all()
+
+    def get_my_rate(self, business):
+        try:
+            return RateEmployee.objects.get(employee=business.owner, client=self.context["request"].user.user_profile).rate
+        except:
+            return None
 
     @staticmethod
     def get_follower_count(business):
