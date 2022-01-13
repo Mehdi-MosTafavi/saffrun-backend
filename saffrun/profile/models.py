@@ -72,5 +72,9 @@ class Business(models.Model):
     full_address = models.TextField(null=True)
     description = models.TextField(null=True)
     images = models.ManyToManyField(Image, related_name="businesses", blank=True)
-    rate = models.FloatField(null=True, default=0)
-    rate_count = models.IntegerField(null=True, default=0)
+
+
+class RateEmployee(BaseModel):
+    employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='rates')
+    client = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='rates')
+    rate = models.FloatField()
