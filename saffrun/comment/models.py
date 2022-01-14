@@ -1,10 +1,13 @@
-from django.db import models
-
 # Create your models here.
-from core.models import BaseModel, Image
-
+from core.models import BaseModel
+from django.db import models
 from event.models import Event
 from profile.models import UserProfile, EmployeeProfile
+
+
+class CommentManager(models.Manager):
+    def get_queryset(self):
+        return super(CommentManager, self).get_queryset().filter(is_active=True)
 
 
 class Comment(BaseModel):
@@ -23,3 +26,4 @@ class Comment(BaseModel):
         'self', on_delete=models.CASCADE, related_name="replied_comment", null=True, blank=True,
         unique=True, db_index=True
     )
+    objects = CommentManager()

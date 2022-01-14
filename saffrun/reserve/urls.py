@@ -19,5 +19,6 @@ urlpatterns = [
     path('web/get-reserve-detail', views.ReserveDetail.as_view(), name='reserve-detail'),
     path('web/remove-all-reserve-date', remove_all_reserve_of_date, name='remove-date-reserve'),
     path('web/remove-reserve', remove_reserve, name='remove-reserve'),
-    path('web/get-reserve-table-detail', views.ResarvationTableReserveDetail.as_view(), name='get-table-detail')
+    path('web/get-reserve-table-detail', views.ResarvationTableReserveDetail.as_view(), name='get-table-detail'),
+    path('web/remove-participant-reserve', views.remove_participant, name='remove-participant')
 ]

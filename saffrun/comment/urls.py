@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 app_name = "comment"
@@ -8,5 +9,6 @@ urlpatterns = [
     path("get_event_comments/", views.get_all_event_comments, name="get_all_event_comments"),
     path("get_owner_comments/", views.get_all_owner_comments, name="get_all_owner_comments"),
     path("get_comment_of_owner/", views.get_comment_of_owner, name="get_all_owner_comments"),
+    path("delete_comment_owner/", views.remove_comment, name="delete_comment"),
 
 ]
