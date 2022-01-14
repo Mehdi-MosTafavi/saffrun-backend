@@ -20,8 +20,9 @@ from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, GetYearlyDetailSerializer, \
     ClientSearchSerializer, EventBusinessSerializer
 from .services import is_user_employee, is_user_client
-from .utils import get_yearly_details
+from .utils import get_yearly_details, get_offers
 from .utils import get_event_businesses_list
+from profile.utils import calculate_employee_rate, get_employee_rate_count
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -76,8 +77,8 @@ class HomePage(generics.RetrieveAPIView):
                 'number_of_comments': Comment.objects.filter(owner=self.profile).count(),
                 'number_of_user_comments': Comment.objects.filter(owner=self.profile, is_parent=True).values(
                     'user').distinct().count(),
-                'rate': round(self.profile.business.rate, 2),
-                'number_user_rate': self.profile.business.rate_count,
+                'rate': calculate_employee_rate(self.profile),
+                'number_user_rate': get_employee_rate_count(self.profile),
                 'last_comments': Comment.objects.filter(owner=self.profile, is_parent=True).order_by(
                     '-id').annotate(
                     username=F('user__user__username')).values('username',

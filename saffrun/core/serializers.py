@@ -46,7 +46,7 @@ class HomepageResponse(serializers.Serializer):
     followers = serializers.IntegerField(min_value=0)
     number_of_events = serializers.IntegerField(min_value=0)
     number_of_active_events = serializers.IntegerField(min_value=0)
-    rate = serializers.FloatField(min_value=0)
+    rate = serializers.FloatField(min_value=0, allow_null=True)
     number_user_rate = serializers.IntegerField(min_value=0)
     number_of_comments = serializers.IntegerField(min_value=0)
     number_of_user_comments = serializers.IntegerField(min_value=0)
