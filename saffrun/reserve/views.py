@@ -9,6 +9,7 @@ from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from event.services import get_all_events_of_specific_day
 from profile.models import EmployeeProfile
+from profile.models import UserProfile
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404, RetrieveAPIView
@@ -27,7 +28,7 @@ from .serializers import (
     NextSevenDaysSerializer,
     ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer, AbstractReserveSerializer,
     ReserveFutureSeriallizer, ReserveHistorySerializer, ReserveDetailSerializer, ReserveRemoveSerializer,
-    ReserveDetailAllReservation, ReserveDetailAllReservationResponseSerializer,
+    ReserveDetailAllReservation, ReserveDetailAllReservationResponseSerializer, RemoveParticipantReserveSerializer,
 )
 from .utils import (
     get_user_busy_dates_list,
@@ -490,3 +491,38 @@ class ResarvationTableReserveDetail(RetrieveAPIView):
                        "validation_errors": serializer.errors},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+@swagger_auto_schema(
+    method="DELETE",
+    request_body=RemoveParticipantReserveSerializer,
+    responses={
+        201: SuccessResponse.DELETED,
+        406: ErrorResponse.INVALID_DATA,
+    },
+)
+@api_view(["DELETE"])
+def remove_participant(request):
+    participant_remove_serializer = RemoveParticipantReserveSerializer(data=request.data)
+    if not participant_remove_serializer.is_valid():
+        return Response(
+            {"Error": ErrorResponse.INVALID_DATA},
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+    employee = get_object_or_404(EmployeeProfile, user=request.user)
+    reserve = get_object_or_404(Reservation, id=participant_remove_serializer.validated_data['reserve_id'])
+    if reserve.owner != employee:
+        return Response(
+            {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    user = get_object_or_404(UserProfile, id=participant_remove_serializer.validated_data['user_id'])
+    if user in reserve.participants.all():
+        reserve.participants.remove(user)
+        return Response(
+            {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
+        )
+    return Response(
+        {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
+        status=status.HTTP_400_BAD_REQUEST,
+    )

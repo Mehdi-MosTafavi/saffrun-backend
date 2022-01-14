@@ -73,3 +73,7 @@ class EventCommentSerializer(serializers.Serializer):
 
 class AdminCommentSerializer(serializers.Serializer):
     admin_id = serializers.IntegerField()
+
+
+class DeleteCommentSerializer(serializers.Serializer):
+    comment_id = serializers.IntegerField()

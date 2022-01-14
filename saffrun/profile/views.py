@@ -3,6 +3,7 @@ from core.responses import ErrorResponse
 # Create your views here.
 from core.responses import SuccessResponse
 from core.serializers import ImageAvatarSerializer
+from core.serializers import ImageSerializer
 from core.services import is_user_client, is_user_employee
 from django.db import transaction
 from django.db.models import F
@@ -52,7 +53,7 @@ class UserView(APIView):
                 "province": profile.province,
                 "gender": profile.gender,
                 "address": profile.address,
-                "avatar": ImageAvatarSerializer(instance=profile.avatar).data
+                "avatar": ImageSerializer(instance=profile.avatar).data
             }
         )
 

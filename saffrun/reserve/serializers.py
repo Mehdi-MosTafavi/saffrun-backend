@@ -266,3 +266,8 @@ class ReserveDetailAllReservation(serializers.Serializer):
 class ReserveDetailAllReservationResponseSerializer(serializers.Serializer):
     pages = serializers.IntegerField()
     reserves = serializers.ListField(child=serializers.DictField())
+
+
+class RemoveParticipantReserveSerializer(serializers.Serializer):
+    reserve_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
