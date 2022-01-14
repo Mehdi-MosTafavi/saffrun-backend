@@ -20,7 +20,7 @@ from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, GetYearlyDetailSerializer, \
     ClientSearchSerializer, EventBusinessSerializer
 from .services import is_user_employee, is_user_client
-from .utils import get_yearly_details, get_offers
+from .utils import get_yearly_details
 from .utils import get_event_businesses_list
 from profile.utils import calculate_employee_rate, get_employee_rate_count
 
