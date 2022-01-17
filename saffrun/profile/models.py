@@ -4,6 +4,7 @@ from core.models import BaseModel
 from core.models import Image
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Count, Avg
 
 GENDER_CHOICES = (
     ('M', 'male'),
@@ -82,6 +83,15 @@ class Business(models.Model):
     full_address = models.TextField(null=True)
     description = models.TextField(null=True)
     images = models.ManyToManyField(Image, related_name="businesses", blank=True)
+
+    @property
+    def rate(self):
+        return None if self.rate_count == 0 else \
+            RateEmployee.objects.filter(employee=self.owner).aggregate(avg_rate=Avg('rate'))["avg_rate"]
+
+    @property
+    def rate_count(self):
+        return RateEmployee.objects.filter(employee=self.owner).aggregate(count_rate=Count('rate'))['count_rate']
 
 
 class RateEmployee(BaseModel):

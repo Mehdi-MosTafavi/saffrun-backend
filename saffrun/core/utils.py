@@ -1,4 +1,5 @@
 from django.db.models import Q, Count, Sum, F
+from django.utils import timezone
 
 from event.models import Event
 
@@ -50,7 +51,6 @@ def get_yearly_details(employee: EmployeeProfile, year:int) -> list:
         })
     return result_list
 
-
 def filter_event_datetime_query(from_datetime, until_datetime):
     if not from_datetime and not until_datetime:
         return Q()
@@ -94,6 +94,40 @@ def get_businesses_for_search(search_query, category_id, sort, from_datetime, un
 def get_event_businesses_list(search_query, category_id, sort, from_datetime, until_datetime):
     events = get_events_for_search(search_query, category_id, sort, from_datetime, until_datetime)
     businesses = get_businesses_for_search(search_query, category_id, sort, from_datetime, until_datetime)
+    serialized_events = EventImageSerializer(events, many=True).data
+    serialized_businesses = GetBusinessSerializer(businesses, many=True).data
+    return {
+        'events': serialized_events,
+        'businesses': serialized_businesses
+    }
+
+def get_most_followed_category(client: UserProfile) -> Category:
+    following_employee = client.following
+    category_dict = {}
+    for employee in following_employee.all():
+        category_dict[employee.business.category.id] = category_dict.get(employee.business.category, 0) + 1
+    if len(category_dict) == 0:
+        return None
+    category_id = max(category_dict.items(), key=lambda category: category[1])[0]
+    return Category.objects.get(pk=category_id)
+
+
+def get_offered_business(client: UserProfile):
+    category = get_most_followed_category(client)
+    if not category:
+        return []
+    businesses = Business.objects.filter(category=category).exclude(owner__followers=client)
+    return sorted(businesses, key=lambda business: business.rate, reverse=True)[:3]
+
+
+def get_offered_events(client: UserProfile):
+    return Event.objects.filter(owner__followers=client).filter(
+        end_datetime__gte=timezone.now()
+    ).exclude(participants=client).annotate(participant_count=Count('participants')).order_by('-participant_count')[:5]
+
+def get_offers(client: UserProfile):
+    events = get_offered_events(client)
+    businesses = get_offered_business(client)
     serialized_events = EventImageSerializer(events, many=True).data
     serialized_businesses = GetBusinessSerializer(businesses, many=True).data
     return {

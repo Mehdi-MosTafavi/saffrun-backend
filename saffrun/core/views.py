@@ -20,9 +20,8 @@ from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, GetYearlyDetailSerializer, \
     ClientSearchSerializer, EventBusinessSerializer
 from .services import is_user_employee, is_user_client
-from .utils import get_yearly_details
+from .utils import get_yearly_details, get_offers
 from .utils import get_event_businesses_list
-from profile.utils import calculate_employee_rate, get_employee_rate_count
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -77,8 +76,8 @@ class HomePage(generics.RetrieveAPIView):
                 'number_of_comments': Comment.objects.filter(owner=self.profile).count(),
                 'number_of_user_comments': Comment.objects.filter(owner=self.profile, is_parent=True).values(
                     'user').distinct().count(),
-                'rate': calculate_employee_rate(self.profile),
-                'number_user_rate': get_employee_rate_count(self.profile),
+                'rate': self.profile.business.rate,
+                'number_user_rate': self.profile.business.rate_count,
                 'last_comments': Comment.objects.filter(owner=self.profile, is_parent=True).order_by(
                     '-id').annotate(
                     username=F('user__user__username')).values('username',
@@ -242,3 +241,21 @@ class ClientSearchView(APIView):
         )
 
         return Response(events_businesses_dict, status=200)
+
+class ClientOfferView(APIView):
+    @swagger_auto_schema(
+        responses={
+            status.HTTP_200_OK: EventBusinessSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponse.USER_CLIENT,
+        }
+    )
+    def get(self, request):
+        if not is_user_client(request.user):
+            return Response(
+                {"status": "Error", "detail": ErrorResponse.USER_CLIENT},
+                status=400,
+            )
+
+        offers = get_offers(request.user.user_profile)
+        return Response(offers, status=200)
+

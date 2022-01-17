@@ -8,16 +8,6 @@ def remove_follower_user(user: UserProfile, employee: EmployeeProfile):
     employee.followers.remove(user)
 
 
-def get_employee_rate_count(employee: EmployeeProfile) -> int:
-    return RateEmployee.objects.filter(employee=employee).aggregate(count_rate=Count('rate'))['count_rate']
-
-def calculate_employee_rate(employee: EmployeeProfile) -> int:
-    rate_count = get_employee_rate_count(employee)
-
-    return None if rate_count == 0 else \
-        RateEmployee.objects.filter(employee=employee).aggregate(avg_rate=Avg('rate'))["avg_rate"]
-
-
 def rate_employee(employee_id: int, user_profile: UserProfile, rate: float) -> Response:
     employee = get_object_or_404(EmployeeProfile, pk=employee_id)
     try:
@@ -28,5 +18,5 @@ def rate_employee(employee_id: int, user_profile: UserProfile, rate: float) -> R
     rate_object.save()
 
     return Response({
-        "new_rate": calculate_employee_rate(employee)
+        "new_rate": employee.business.rate
     }, status=200)

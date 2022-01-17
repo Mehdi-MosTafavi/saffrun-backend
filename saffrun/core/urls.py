@@ -11,5 +11,6 @@ urlpatterns = [
     path(r"homepage/", views.HomePage.as_view(), name="homepage"),
     path(r"client/homepage/", views.HomePageClient.as_view(), name="homepage-client"),
     path(r"web/get-yearly-details/", views.GetYearlyDetails.as_view(), name="get-yearly-details"),
-    path(r"client/search", views.ClientSearchView.as_view(), name='client-search')
+    path(r"client/search", views.ClientSearchView.as_view(), name='client-search'),
+    path(r"client/offer", views.ClientOfferView.as_view(), name="client-offer")
 ]
