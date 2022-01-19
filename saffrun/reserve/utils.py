@@ -119,7 +119,7 @@ def get_paginated_past_reservation_result(reserves_serializer, request):
     paginated_past = paginator.paginate_queryset(past_reserves, request)
     return get_details_past(
         paginated_past, owner=request.user.employee_profile
-    )
+    ), past_reserves.count()
 
 
 def get_paginated_future_reservation_result(reserves_serializer, request):

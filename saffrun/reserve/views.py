@@ -102,10 +102,12 @@ def get_past_reserves(request):
             exception={"error": ErrorResponse.INVALID_DATA},
             status=status.HTTP_406_NOT_ACCEPTABLE,
         )
-    past_result = get_paginated_past_reservation_result(
+    past_result, count_reserves = get_paginated_past_reservation_result(
         reserves_serializer, request
     )
-    return Response({"reserves": past_result}, status=200)
+    page_count = reserves_serializer.validated_data['page_count']
+
+    return Response({"pages ": ceil(count_reserves / page_count), "reserves": past_result}, status=200)
 
 
 @swagger_auto_schema(
