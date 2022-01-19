@@ -8,6 +8,7 @@ from comment.utils import save_a_comment, save_a_reply, get_event_comments, get_
 from core.responses import ErrorResponse
 from core.responses import SuccessResponse
 # Create your views here.
+from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from event.models import Event
 from profile.models import EmployeeProfile
@@ -150,7 +151,8 @@ def remove_comment(request):
         profile = get_object_or_404(EmployeeProfile, user=request.user)
     except:
         return Response({"message": "profile not found"})
-    comment = get_object_or_404(Comment, id=query_serializer.validated_data['comment_id'], owner=profile)
+    comment = get_object_or_404(Comment, Q(owner=profile) | Q(event__owner=profile),
+                                id=query_serializer.validated_data['comment_id'])
     try:
         comment.is_active = False
         comment.save()
