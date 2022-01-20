@@ -3,6 +3,7 @@ from math import ceil
 from core.responses import ErrorResponse, SuccessResponse
 from core.serializers import GetAllSerializer
 from core.services import is_user_employee, is_user_client
+from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
 from profile.models import EmployeeProfile, UserProfile
 from rest_framework import status
@@ -24,6 +25,8 @@ from .serializers import (
     EventUpdateSerializer,
 )
 from .utils import get_sorted_events, create_an_event, get_event_history_client, get_sorted_events_client
+from payment.models import Invoice
+from payment.serializers import random_string_generator
 
 
 class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -212,10 +215,17 @@ def remove_participant(request):
         )
     user = get_object_or_404(UserProfile, id=participant_remove_serializer.validated_data['user_id'])
     if user in event.participants.all():
-        event.participants.remove(user)
-        return Response(
-            {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
-        )
+        with transaction.atomic():
+            event.participants.remove(user)
+            Invoice.objects.create(debtor=user.id,
+                                   amount=event.price - event.discount,
+                                   filter={'mode': 'event', 'id': event.id},
+                                   token='S' + random_string_generator(11),
+                                   reference_code=random_string_generator(24),
+                                   is_wallet_invoice=True)
+            return Response(
+                {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
+            )
     return Response(
         {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
         status=status.HTTP_400_BAD_REQUEST,

@@ -28,6 +28,7 @@ class Payment(generics.ListCreateAPIView):
         self.profile = None
         self.mode_id = None
         self.mode = mode
+        self.wallet = False
 
     def _get_profile(self):
         try:
@@ -56,6 +57,8 @@ class Payment(generics.ListCreateAPIView):
             query = query.filter(filters__mode=self.mode)
         if self.mode_id:
             query = query.filter(filters__id=self.mode_id)
+        if self.wallet:
+            query = query.filter(is_wallet_invoice=True)
         return query
 
     def list(self, request, *args, **kwargs):
@@ -103,7 +106,6 @@ def get_all_payments_user(request):
     if is_user_client(request.user):
         payments_serializer = get_payments_of_user(request)
         if not payments_serializer.is_valid():
-            print(payments_serializer.errors)
             return Response(
                 {"Error": ErrorResponse.INVALID_DATA},
                 status=status.HTTP_406_NOT_ACCEPTABLE,

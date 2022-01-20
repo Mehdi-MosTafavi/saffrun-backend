@@ -14,14 +14,12 @@ GENDER_CHOICES = (
 
 
 class ProfileBase(BaseModel):
-    phone = models.CharField(max_length=11, null=True, unique=True, blank=True)
+    phone = models.CharField(max_length=11, null=True, blank=True)
     country = models.CharField(max_length=20, null=True, blank=True)
     city = models.CharField(max_length=20, null=True, blank=True)
     province = models.CharField(max_length=20, null=True, blank=True)
     address = models.CharField(max_length=50, null=True, blank=True)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1, default='N')
-
-
 
     class Meta:
         abstract = True
@@ -33,6 +31,7 @@ class UserProfile(ProfileBase):
     )
     following = models.ManyToManyField("EmployeeProfile", blank=True, related_name="followers")
     notification_token = models.CharField(max_length=200, blank=True, null=True)
+    wallet = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.username
@@ -45,6 +44,7 @@ class UserProfile(ProfileBase):
         related_name="avatar_user"
 
     )
+
 
 class EmployeeProfile(ProfileBase):
     user = models.OneToOneField(

@@ -3,6 +3,7 @@ from math import ceil
 from core.responses import ErrorResponse, SuccessResponse
 from core.serializers import GetAllSerializer
 from core.services import is_user_client
+from django.db import transaction
 from django.db.models import Count, F, FloatField
 from django.db.models.functions import Cast
 from django.utils import timezone
@@ -40,6 +41,8 @@ from .utils import (
     get_reserve_abstract_dictionary, get_current_reserve, get_nearest_busy_reserve,
     get_paginated_past_reservation_result, get_paginated_future_reservation_result, get_reserve_history_client,
 )
+from payment.models import Invoice
+from payment.serializers import random_string_generator
 from event.serializers import SpecificEventSerializer
 
 
@@ -395,12 +398,21 @@ def remove_all_reserve_of_date(request):
     reserves = Reservation.objects.filter(start_datetime__date=query_serializer.validated_data['date'],
                                           owner=profile)
     try:
-        for reserve in reserves:
-            reserve.is_active = False
-            reserve.save()
-        return Response(
-            {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
-        )
+        with transaction.atomic():
+            for reserve in reserves:
+                if reserve.participants.exists():
+                    for user in reserve.participants:
+                        Invoice.objects.create(debtor=user.id,
+                                               amount=reserve.price,
+                                               filter={'mode': 'reserve', 'id': reserve.id},
+                                               token='S' + random_string_generator(11),
+                                               reference_code=random_string_generator(24),
+                                               is_wallet_invoice=True)
+                reserve.is_active = False
+                reserve.save()
+            return Response(
+                {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
+            )
     except:
         return Response(
             {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
@@ -427,11 +439,20 @@ def remove_reserve(request):
         return Response({"message": "profile not found"})
     reserve = get_object_or_404(Reservation, id=query_serializer.validated_data['reserve_id'])
     try:
-        reserve.is_active = False
-        reserve.save()
-        return Response(
-            {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
-        )
+        with transaction.atomic():
+            if reserve.participants.exists():
+                for user in reserve.participants:
+                    Invoice.objects.create(debtor=user.id,
+                                           amount=reserve.price,
+                                           filter={'mode': 'reserve', 'id': reserve.id},
+                                           token='S' + random_string_generator(11),
+                                           reference_code=random_string_generator(24),
+                                           is_wallet_invoice=True)
+            reserve.is_active = False
+            reserve.save()
+            return Response(
+                {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
+            )
     except:
         return Response(
             {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
@@ -439,7 +460,7 @@ def remove_reserve(request):
         )
 
 
-class ResarvationTableReserveDetail(RetrieveAPIView):
+class ReservationTableReserveDetail(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
 
     def __init__(self, *args, **kwargs):
@@ -520,10 +541,18 @@ def remove_participant(request):
         )
     user = get_object_or_404(UserProfile, id=participant_remove_serializer.validated_data['user_id'])
     if user in reserve.participants.all():
-        reserve.participants.remove(user)
-        return Response(
-            {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
-        )
+        with transaction.atomic():
+            reserve.participants.remove(user)
+            Invoice.objects.create(debtor=user.id,
+                                   amount=reserve.price,
+                                   filter={'mode': 'reserve', 'id': reserve.id},
+                                   token='S' + random_string_generator(11),
+                                   reference_code=random_string_generator(24),
+                                   is_wallet_invoice=True)
+            reserve.participants.remove(user)
+            return Response(
+                {"success": SuccessResponse.DELETED}, status=status.HTTP_200_OK
+            )
     return Response(
         {"status": "Error", "detail": ErrorResponse.DID_NOT_FOLLOW},
         status=status.HTTP_400_BAD_REQUEST,
