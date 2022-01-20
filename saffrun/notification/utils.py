@@ -26,7 +26,7 @@ def send_notif(employee: EmployeeProfile, _type: int, title: str, text: str, url
             notif.save()
 
         elif _type == 2:
-            client.send_to_all(title, text, url, Config.saffrun_pic_url)
+            client.send_to_all(title, text, url, Config.saffrun_pic_url, one_signal_accounts=[])
             notif = Notification.objects.create(title=title, text=text, type=_type, sender=employee, url=url)
             notif.receivers.add(*list(UserProfile.objects.all().values_list("id", flat=True)))
             notif.save()

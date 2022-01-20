@@ -174,6 +174,7 @@ class ReserveOwnerDetail(serializers.ModelSerializer):
         particpiants_list = []
         for participant in obj.participants.all():
             particpiants_list.append({
+                'id': participant.id,
                 'name': participant.user.username,
                 'image': ImageAvatarSerializer(instance=participant.avatar).data
             })
