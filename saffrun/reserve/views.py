@@ -174,13 +174,11 @@ def get_detail_of_a_day(request):
     date = day_serializer.validated_data["date"]
     events = get_all_events_of_specific_day(request.user.user_profile, date)
     reserves = get_all_user_reserves_in_a_day(request.user.user_profile, date)
-    day_detail_serializer = DayDetailSerializer(
-        instance={
-            "events": events,
-            "reserves": reserves,
-        }
-    )
-    return Response(data=day_detail_serializer.data, status=status.HTTP_200_OK)
+    day_data={
+        "events": events,
+        "reserves": reserves,
+    }
+    return Response(data=day_data, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(
