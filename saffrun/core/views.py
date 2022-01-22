@@ -20,8 +20,8 @@ from .responses import ErrorResponse
 from .serializers import ImageSerializer, HomepageResponse, HomepageResponseClient, GetYearlyDetailSerializer, \
     ClientSearchSerializer, EventBusinessSerializer
 from .services import is_user_employee, is_user_client
-from .utils import get_yearly_details, get_offers
 from .utils import get_event_businesses_list
+from .utils import get_yearly_details, get_offers
 
 
 class ImageViewSet(FlexFieldsModelViewSet):
@@ -162,7 +162,7 @@ class HomePageClient(generics.RetrieveAPIView):
                 ).order_by('-updated_at').distinct().values('id', 'title', 'description', 'start_datetime',
                                                             'end_datetime', owner_name=F('owner__business__title')),
                 'list_reserve': [dict(item, **{'picture': ImageSerializer(
-                    instance=get_object_or_404(Image, avatar_employee=self.profile.id)).data}) for item in
+                    instance=get_object_or_404(Image, avatar_employee=item['ownerId'])).data}) for item in
                                  Reservation.objects.filter(
                                      participants__in=[self.profile.id],
                                      end_datetime__gte=time

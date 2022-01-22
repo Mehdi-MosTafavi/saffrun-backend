@@ -1,18 +1,12 @@
+from category.models import Category
 from django.db.models import Q, Count, Sum, F
 from django.utils import timezone
-
 from event.models import Event
-
+from event.serializers import EventImageSerializer
+from profile.models import UserProfile, EmployeeProfile, Business
+from profile.serializers import GetBusinessSerializer
 from reserve.models import Reservation
 from rest_framework.generics import get_object_or_404
-from rest_framework.response import Response
-
-from profile.models import RateEmployee, UserProfile, EmployeeProfile, Business
-
-from category.models import Category
-
-from event.serializers import EventImageSerializer
-from profile.serializers import GetBusinessSerializer
 
 
 def get_date_query(year: int, month: int):
@@ -27,20 +21,22 @@ def get_date_query(year: int, month: int):
     date_query = in_month_query & in_year_query
     return date_query
 
+
 def get_event_participant_count(employee: EmployeeProfile, year: int, month: int) -> int:
     date_query = get_date_query(year, month)
     event_count = Event.objects.filter(owner=employee).filter(date_query).annotate(
         participant_count=Count("participants")).aggregate(participant_sum=Sum("participant_count"))["participant_sum"]
     return event_count if event_count else 0
 
-def get_reserve_participant_count(employee:EmployeeProfile, year:int, month:int) -> int:
+
+def get_reserve_participant_count(employee: EmployeeProfile, year: int, month: int) -> int:
     date_query = get_date_query(year, month)
     reservation_count = Reservation.objects.filter(owner=employee).filter(date_query).annotate(
         participant_count=Count("participants")).aggregate(participant_sum=Sum("participant_count"))["participant_sum"]
     return reservation_count if reservation_count else 0
 
 
-def get_yearly_details(employee: EmployeeProfile, year:int) -> list:
+def get_yearly_details(employee: EmployeeProfile, year: int) -> list:
     result_list = []
     for month in range(12):
         event_count = get_event_participant_count(employee, year, month + 1)
@@ -51,6 +47,7 @@ def get_yearly_details(employee: EmployeeProfile, year:int) -> list:
         })
     return result_list
 
+
 def filter_event_datetime_query(from_datetime, until_datetime):
     if not from_datetime and not until_datetime:
         return Q()
@@ -58,6 +55,7 @@ def filter_event_datetime_query(from_datetime, until_datetime):
     start_before_query = Q(start_datetime__lt=from_datetime)
     end_after_query = Q(end_datetime__gt=from_datetime)
     return start_between_query | (start_before_query & end_after_query)
+
 
 def filter_business_datetime_query(from_datetime, until_datetime):
     if not from_datetime and not until_datetime:
@@ -67,6 +65,7 @@ def filter_business_datetime_query(from_datetime, until_datetime):
     reserve_until_datetime_query = Q(owner__owned_reserves__end_datetime__lte=until_datetime)
     reserve_datetime_query = reserve_from_datetime_query & reserve_until_datetime_query
     return reserve_capacity_query & reserve_datetime_query
+
 
 def filter_category_query(category_id):
     if not category_id:
@@ -82,6 +81,7 @@ def get_events_for_search(search_query, category_id, sort, from_datetime, until_
         filter_event_datetime_query(from_datetime, until_datetime)
     ).order_by(sort.value)[:5]
 
+
 def get_businesses_for_search(search_query, category_id, sort, from_datetime, until_datetime):
     return Business.objects.annotate(
         participants_count=Count('owner__owned_reserves__participants')
@@ -89,7 +89,8 @@ def get_businesses_for_search(search_query, category_id, sort, from_datetime, un
         Q(title__icontains=search_query) &
         filter_category_query(category_id) &
         filter_business_datetime_query(from_datetime, until_datetime)
-    ).order_by(sort.value if sort.value=='title' else 'id')[:5]
+    ).order_by(sort.value if sort.value == 'title' else 'id')[:5]
+
 
 def get_event_businesses_list(search_query, category_id, sort, from_datetime, until_datetime):
     events = get_events_for_search(search_query, category_id, sort, from_datetime, until_datetime)
@@ -100,6 +101,7 @@ def get_event_businesses_list(search_query, category_id, sort, from_datetime, un
         'events': serialized_events,
         'businesses': serialized_businesses
     }
+
 
 def get_most_followed_category(client: UserProfile) -> Category:
     following_employee = client.following
@@ -117,13 +119,14 @@ def get_offered_business(client: UserProfile):
     if not category:
         return []
     businesses = Business.objects.filter(category=category).exclude(owner__followers=client)
-    return sorted(businesses, key=lambda business: business.rate, reverse=True)[:3]
+    return businesses[:3]
 
 
 def get_offered_events(client: UserProfile):
     return Event.objects.filter(owner__followers=client).filter(
         end_datetime__gte=timezone.now()
     ).exclude(participants=client).annotate(participant_count=Count('participants')).order_by('-participant_count')[:5]
+
 
 def get_offers(client: UserProfile):
     events = get_offered_events(client)
