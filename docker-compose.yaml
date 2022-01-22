@@ -21,12 +21,12 @@ services:
     tty: true
     environment:
       - DB_HOST=db
-      - DEBUG=True
-    command: /bin/bash -c "cd saffrun && python manage.py makemigrations && python manage.py migrate && celery -A saffrun worker --loglevel=INFO -D && python manage.py runserver 0.0.0.0:8000"
+      - DEBUG=false
+    command: /bin/bash -c "cd saffrun && python manage.py makemigrations && python manage.py migrate && celery -A saffrun worker --loglevel=INFO -D && python manage.py runserver 0.0.0.0:80"
     volumes:
       - .:/code
     ports:
-      - "8000:8000"
+      - "80:80"
       - "5555:5555"
     depends_on:
       - db

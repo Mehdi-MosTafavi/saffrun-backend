@@ -62,4 +62,4 @@ urlpatterns = [
                   path("api/comment/", include("comment.urls")),
                   path("api/category/", include("category.urls")),
                   path("api/payment/", include("payment.urls")),
-              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
