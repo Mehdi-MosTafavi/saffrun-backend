@@ -29,6 +29,7 @@ from .serializers import (
     ReserveEmployeeSerializer, ReserveOwnerDetail, CurrentNearestReserveSerializer, AbstractReserveSerializer,
     ReserveFutureSeriallizer, ReserveHistorySerializer, ReserveDetailSerializer, ReserveRemoveSerializer,
     ReserveDetailAllReservation, ReserveDetailAllReservationResponseSerializer, RemoveParticipantReserveSerializer,
+    ReserveSerializer,
 )
 from .utils import (
     get_user_busy_dates_list,
@@ -39,6 +40,7 @@ from .utils import (
     get_reserve_abstract_dictionary, get_current_reserve, get_nearest_busy_reserve,
     get_paginated_past_reservation_result, get_paginated_future_reservation_result, get_reserve_history_client,
 )
+from event.serializers import SpecificEventSerializer
 
 
 @swagger_auto_schema(
@@ -174,13 +176,11 @@ def get_detail_of_a_day(request):
     date = day_serializer.validated_data["date"]
     events = get_all_events_of_specific_day(request.user.user_profile, date)
     reserves = get_all_user_reserves_in_a_day(request.user.user_profile, date)
-    day_detail_serializer = DayDetailSerializer(
-        instance={
-            "events": events,
-            "reserves": reserves,
-        }
-    )
-    return Response(data=day_detail_serializer.data, status=status.HTTP_200_OK)
+    day_data={
+        "events": SpecificEventSerializer(events, many=True).data,
+        "reserves": ReserveSerializer(reserves, many=True).data,
+    }
+    return Response(data=day_data, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(
