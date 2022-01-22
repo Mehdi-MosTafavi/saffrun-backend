@@ -116,7 +116,8 @@ def get_payments_of_user(request):
             'event_payment': payment_event,
             'reserve_payment': payment_reserve,
             'total_payment': (payment_event + payment_reserve),
-            'chart_data': chart_months
+            'chart_data': chart_months,
+            'wallet': user.wallet
         }
     )
 
