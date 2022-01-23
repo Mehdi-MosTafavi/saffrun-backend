@@ -1,5 +1,5 @@
 from core.configs import Config
-from najva_api_client.najva import Najva
+from .najva import Najva
 from profile.models import UserProfile, EmployeeProfile
 from rest_framework.pagination import PageNumberPagination
 
