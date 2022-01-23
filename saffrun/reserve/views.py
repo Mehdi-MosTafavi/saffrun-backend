@@ -403,7 +403,7 @@ def remove_all_reserve_of_date(request):
             for reserve in reserves:
                 if reserve.participants.exists():
                     for user in reserve.participants:
-                        Invoice.objects.create(debtor=user.id,
+                        Invoice.objects.create(debtor=user,
                                                amount=reserve.price,
                                                filter={'mode': 'reserve', 'id': reserve.id},
                                                token='S' + random_string_generator(11),
@@ -443,9 +443,9 @@ def remove_reserve(request):
         with transaction.atomic():
             if reserve.participants.exists():
                 for user in reserve.participants:
-                    Invoice.objects.create(debtor=user.id,
+                    Invoice.objects.create(debtor=user,
                                            amount=reserve.price,
-                                           filter={'mode': 'reserve', 'id': reserve.id},
+                                           filters={'mode': 'reserve', 'id': reserve.id},
                                            token='S' + random_string_generator(11),
                                            reference_code=random_string_generator(24),
                                            is_wallet_invoice=True)
@@ -546,7 +546,7 @@ def remove_participant(request):
             reserve.participants.remove(user)
             Invoice.objects.create(debtor=user.id,
                                    amount=reserve.price,
-                                   filter={'mode': 'reserve', 'id': reserve.id},
+                                   filters={'mode': 'reserve', 'id': reserve.id},
                                    token='S' + random_string_generator(11),
                                    reference_code=random_string_generator(24),
                                    is_wallet_invoice=True)

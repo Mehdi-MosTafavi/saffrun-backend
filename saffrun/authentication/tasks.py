@@ -11,7 +11,6 @@ def send_email(self, *args):
     new_password = User.objects.make_random_password()
     user.set_password(new_password)
     user.save()
-    if not validate_email(user.email):
-        raise Exception('Email InValid')
+    print(user.email)
     send_mail('New Password', f'Hi {user.username}!\nYour new password is: {new_password}', EMAIL_HOST_USER,
               recipient_list=[user.email], fail_silently=False)

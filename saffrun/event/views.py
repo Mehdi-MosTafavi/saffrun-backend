@@ -217,9 +217,9 @@ def remove_participant(request):
     if user in event.participants.all():
         with transaction.atomic():
             event.participants.remove(user)
-            Invoice.objects.create(debtor=user.id,
+            Invoice.objects.create(debtor=user,
                                    amount=event.price - event.discount,
-                                   filter={'mode': 'event', 'id': event.id},
+                                   filters={'mode': 'event', 'id': event.id},
                                    token='S' + random_string_generator(11),
                                    reference_code=random_string_generator(24),
                                    is_wallet_invoice=True)

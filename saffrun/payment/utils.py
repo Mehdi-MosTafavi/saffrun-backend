@@ -12,11 +12,10 @@ from rest_framework.pagination import PageNumberPagination
 from .models import Invoice
 from .serializers import TurnOverSerializer
 
-
 def get_payments_of_employee(serializer, request):
     employee = get_object_or_404(EmployeeProfile, user=request.user)
-    payments = Invoice.objects.filter(owner=employee).order_by('-created_at')
-    list_dates = payments.values_list("created_at__date", flat=True).distinct()
+    payments = Invoice.objects.filter(owner=employee,is_wallet_invoice=False).order_by('created_at')
+    list_dates =payments.values_list("created_at__date", flat=True).distinct().order_by().reverse()
     paginator = PageNumberPagination()
     paginator.page_size = serializer.validated_data.get("page_count")
     paginator.page = serializer.validated_data.get("page")
@@ -89,7 +88,7 @@ def get_list_year_month():
 
 def get_payments_of_user(request):
     user = get_object_or_404(UserProfile, user=request.user)
-    payments = Invoice.objects.filter(debtor=user).order_by('-created_at')
+    payments = Invoice.objects.filter(debtor=user,is_wallet_invoice=False).order_by('-created_at')
 
     list_year_date = get_list_year_month()
     chart_months = []
