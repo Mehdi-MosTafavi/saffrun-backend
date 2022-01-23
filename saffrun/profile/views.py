@@ -53,7 +53,8 @@ class UserView(APIView):
                 "province": profile.province,
                 "gender": profile.gender,
                 "address": profile.address,
-                "avatar": ImageSerializer(instance=profile.avatar).data
+                "avatar": ImageSerializer(instance=profile.avatar).data,
+                "wallet": profile.wallet if isinstance(profile, UserProfile) else 0
             }
         )
 
