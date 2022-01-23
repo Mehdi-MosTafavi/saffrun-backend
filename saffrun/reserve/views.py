@@ -40,6 +40,7 @@ from .utils import (
     reserve_it,
     get_reserve_abstract_dictionary, get_current_reserve, get_nearest_busy_reserve,
     get_paginated_past_reservation_result, get_paginated_future_reservation_result, get_reserve_history_client,
+    get_all_payments_of_date,
 )
 from payment.models import Invoice
 from payment.serializers import random_string_generator
@@ -337,7 +338,7 @@ class ReserveDetail(RetrieveAPIView):
                 "date": date,
                 "number_of_reservation": Reservation.objects.filter(start_datetime__date=date,
                                                                     owner=self.profile).distinct().count(),
-                "payment_of_date": 30000,
+                "payment_of_date": get_all_payments_of_date(request.user.employee_profile, date),
                 "number_of_users": self.get_participant_count(date),
                 "number_of_full_reservation": self.get_participant_count_query(
                     date).filter(participant_count=F('capacity')).count(),

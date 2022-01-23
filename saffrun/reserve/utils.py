@@ -1,6 +1,7 @@
+import datetime
 from datetime import timedelta
 
-from django.db.models import Q, Count, F
+from django.db.models import Q, Count, F, Sum
 from django.utils import timezone
 from event.models import Event
 from profile.models import EmployeeProfile, UserProfile
@@ -280,3 +281,12 @@ def get_reserve_history_client(client: UserProfile, page: int, page_count: int, 
     paginator.page = page
     reserves = Reservation.objects.filter(participants=client).order_by('-updated_at')
     return paginator.paginate_queryset(reserves, request)
+
+
+def get_all_payments_of_date(employee: EmployeeProfile, date):
+    data = Reservation.objects.filter(
+        owner=employee, start_datetime__date=date
+    ).annotate(participant_count=Count('participants')).annotate(
+        full_price=F('participant_count') * F('price')
+    ).aggregate(total=Sum('full_price'))
+    return data.get('total') if data.get('total') else 0
